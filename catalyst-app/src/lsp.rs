@@ -2,7 +2,6 @@ use std::path::PathBuf;
 
 use lsp_types::Uri;
 use tracing::{event, Level};
-use url::Url;
 
 // Rust-analyzer returns paths in the form of "file:///<drive>:/...", which gets parsed into URL
 // as "/<drive>://" which is then interpreted by PathBuf::new() as a UNIX-like path from root.

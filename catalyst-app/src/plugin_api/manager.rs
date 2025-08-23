@@ -8,8 +8,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::plugin_api::{
-    AiAssistantPlugin, AiPluginInfo, McpServerInfo, McpServerRegistry,
-    SidebarPanelInfo, SidebarPanelRegistry,
+    AiAssistantPlugin, McpServerRegistry, SidebarPanelRegistry,
 };
 
 /// Main plugin manager for Catalyst IDE
