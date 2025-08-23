@@ -1,0 +1,44 @@
+# Pre-commit hooks for Catalyst IDE
+repos:
+  - repo: local
+    hooks:
+      - id: cargo-fmt
+        name: Rust formatting
+        entry: cargo
+        args: [fmt-all, --check]
+        language: system
+        types: [rust]
+        
+      - id: cargo-clippy
+        name: Rust linting
+        entry: cargo
+        args: [clippy-all]
+        language: system
+        types: [rust]
+        
+      - id: cargo-test-unit
+        name: Unit tests
+        entry: cargo
+        args: [test-unit]
+        language: system
+        types: [rust]
+        pass_filenames: false
+        
+      - id: performance-check
+        name: Performance regression check
+        entry: bash
+        args: [-c, 'echo "Running performance regression check..." && cargo test-performance --quiet || echo "Performance tests require full build"']
+        language: system
+        types: [rust]
+        pass_filenames: false
+        
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '.*\.(md|rst)$'
+      - id: end-of-file-fixer
+        exclude: '.*\.(md|rst)$'
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict

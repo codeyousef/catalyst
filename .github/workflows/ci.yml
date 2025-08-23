@@ -7,7 +7,7 @@ on:
     paths:
       - Cargo.toml
       - Cargo.lock
-      - lapce-**
+      - catalyst-**
 
 name: CI
 
@@ -51,7 +51,7 @@ jobs:
 
       - name: Build as portable
         if: startsWith(matrix.os, 'windows')
-        run: cargo build --frozen --features lapce-app/portable
+        run: cargo build --frozen --features catalyst-app/portable
 
       - name: Free space on Windows
         if: startsWith(matrix.os, 'windows')

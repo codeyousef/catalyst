@@ -1,3 +1,33 @@
 # Link runtime statically so Visual C++ Redist is not required
 [target.'cfg(all(windows, target_env = "msvc"))']
 rustflags = ["-C", "target-feature=+crt-static"]
+
+[alias]
+# Test aliases for Catalyst IDE development
+test-all = "test --workspace"
+test-performance = "test --test performance --release"
+test-mcp = "test --test mcp"
+test-integration = "test --test integration"
+test-unit = "test --lib --workspace"
+test-coverage = "tarpaulin --all --out Html --output-dir target/coverage/"
+test-ci = "test --workspace --release"
+
+# Build aliases
+build-fast = "build --profile fastdev"
+build-release = "build --profile release-lto"
+check-all = "check --workspace"
+
+# Development aliases
+run-catalyst = "run -p catalyst-app --bin catalyst"
+run-proxy = "run -p catalyst-proxy --bin catalyst-proxy"
+fmt-all = "fmt --all"
+clippy-all = "clippy --workspace -- -D warnings"
+
+[env]
+# Performance testing environment variables
+CATALYST_TEST_MODE = "1"
+RUST_BACKTRACE = "1"
+
+[build]
+# Default to faster builds during development
+incremental = true

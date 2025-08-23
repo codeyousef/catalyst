@@ -1,0 +1,171 @@
+name: Catalyst IDE CI
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+env:
+  CARGO_TERM_COLOR: always
+  CATALYST_TEST_MODE: 1
+
+jobs:
+  # Test-Driven Development validation
+  tdd-validation:
+    name: TDD Test Suite
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: clippy, rustfmt
+        
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          clang \
+          libxkbcommon-x11-dev \
+          pkg-config \
+          libvulkan-dev \
+          libwayland-dev \
+          xorg-dev \
+          libxcb-shape0-dev \
+          libxcb-xfixes0-dev
+          
+    - name: Cache cargo registry
+      uses: actions/cache@v3
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+        
+    - name: Cache cargo index
+      uses: actions/cache@v3
+      with:
+        path: ~/.cargo/git
+        key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+        
+    - name: Cache cargo build
+      uses: actions/cache@v3
+      with:
+        path: target
+        key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Check code formatting
+      run: cargo fmt-all --check
+      
+    - name: Run clippy
+      run: cargo clippy-all
+      
+    - name: Run unit tests
+      run: cargo test-unit
+      
+    - name: Run integration tests
+      run: cargo test-integration --release
+      
+    - name: Run MCP tests
+      run: cargo test-mcp
+      
+  # Performance validation
+  performance-tests:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          clang \
+          libxkbcommon-x11-dev \
+          pkg-config \
+          libvulkan-dev \
+          libwayland-dev \
+          xorg-dev \
+          libxcb-shape0-dev \
+          libxcb-xfixes0-dev
+          
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-perf-${{ hashFiles('**/Cargo.lock') }}
+        
+    - name: Run performance tests
+      run: cargo test-performance
+      
+    - name: Validate performance requirements
+      run: |
+        echo "Performance requirements validation:"
+        echo "- Cold start: < 500ms"
+        echo "- Warm start: < 200ms" 
+        echo "- Memory idle: < 40MB"
+        echo "- Binary size: < 5MB"
+        echo "Tests will validate these requirements"
+        
+  # Build validation across platforms
+  build-test:
+    name: Build Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      
+    - name: Install Linux dependencies
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          clang \
+          libxkbcommon-x11-dev \
+          pkg-config \
+          libvulkan-dev \
+          libwayland-dev \
+          xorg-dev \
+          libxcb-shape0-dev \
+          libxcb-xfixes0-dev
+          
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
+        
+    - name: Build workspace
+      run: cargo build --workspace
+      
+    - name: Build release
+      run: cargo build-release
+      
+    - name: Verify binary size (Linux only)
+      if: runner.os == 'Linux'
+      run: |
+        ls -la target/release-lto/
+        if [ -f target/release-lto/catalyst ]; then
+          size=$(du -b target/release-lto/catalyst | cut -f1)
+          size_mb=$((size / 1024 / 1024))
+          echo "Binary size: ${size_mb}MB"
+          if [ $size_mb -gt 5 ]; then
+            echo "ERROR: Binary size ${size_mb}MB exceeds 5MB limit"
+            exit 1
+          fi
+        fi

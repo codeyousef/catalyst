@@ -1,7 +1,7 @@
 #:schema ../extra/schemas/color-theme.json
 
 [color-theme]
-name = "Lapce Light"
+name = "Catalyst Light"
 
 [ui]
 font-family = ""
@@ -88,38 +88,38 @@ dim-text = "#A0A1A7"
 "bracket.unpaired" = "$red"
 
 [color-theme.ui]
-"lapce.error" = "#E51400"
-"lapce.warn" = "#E9A700"
-"lapce.dropdown_shadow" = "#B4B4B4"
-"lapce.border" = "#B4B4B4"
-"lapce.scroll_bar" = "#B4B4B4BB"
+"catalyst.error" = "#E51400"
+"catalyst.warn" = "#E9A700"
+"catalyst.dropdown_shadow" = "#B4B4B4"
+"catalyst.border" = "#B4B4B4"
+"catalyst.scroll_bar" = "#B4B4B4BB"
 
-"lapce.button.primary.background" = "#50a14f"
-"lapce.button.primary.foreground" = "$white"
+"catalyst.button.primary.background" = "#50a14f"
+"catalyst.button.primary.foreground" = "$white"
 
 # tab
-"lapce.tab.active.background" = "$primary-background"
-"lapce.tab.active.foreground" = "$text"
-"lapce.tab.active.underline" = "#528BFF"
+"catalyst.tab.active.background" = "$primary-background"
+"catalyst.tab.active.foreground" = "$text"
+"catalyst.tab.active.underline" = "#528BFF"
 
-"lapce.tab.inactive.background" = "#EAEAEB"
-"lapce.tab.inactive.foreground" = "$text"
-"lapce.tab.inactive.underline" = "#528BFF77"
+"catalyst.tab.inactive.background" = "#EAEAEB"
+"catalyst.tab.inactive.foreground" = "$text"
+"catalyst.tab.inactive.underline" = "#528BFF77"
 
-"lapce.tab.separator" = "#B4B4B4"
+"catalyst.tab.separator" = "#B4B4B4"
 
-"lapce.icon.active" = "$text"
-"lapce.icon.inactive" = "$dim-text"
+"catalyst.icon.active" = "$text"
+"catalyst.icon.inactive" = "$dim-text"
 
-"lapce.remote.icon" = "$white"
-"lapce.remote.local" = "#4078F2"
-"lapce.remote.connected" = "#50A14F"
-"lapce.remote.connecting" = "#C18401"
-"lapce.remote.disconnected" = "#E45649"
+"catalyst.remote.icon" = "$white"
+"catalyst.remote.local" = "#4078F2"
+"catalyst.remote.connected" = "#50A14F"
+"catalyst.remote.connecting" = "#C18401"
+"catalyst.remote.disconnected" = "#E45649"
 
-"lapce.plugin.name" = "#444444"
-"lapce.plugin.description" = "$text"
-"lapce.plugin.author" = "#707070"
+"catalyst.plugin.name" = "#444444"
+"catalyst.plugin.description" = "$text"
+"catalyst.plugin.author" = "#707070"
 
 "terminal.cursor" = "$text"
 "terminal.foreground" = "$text"

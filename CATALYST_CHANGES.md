@@ -1,6 +1,6 @@
 # Catalyst IDE Changes Log
 
-This document tracks all modifications made to transform Lapce into Catalyst IDE, following the implementation plan in `docs/private/catalyst-ide.md`.
+This document tracks all modifications made to transform Catalyst into Catalyst IDE, following the implementation plan in `docs/private/catalyst-ide.md`.
 
 ## Phase 0: Test Infrastructure Setup ✓ COMPLETED
 
@@ -25,42 +25,42 @@ This document tracks all modifications made to transform Lapce into Catalyst IDE
 - [x] Set up MCP protocol compliance test structure
 - [x] Created integration test framework
 
-## Phase 1: Lapce Fork Preparation 🔄 IN PROGRESS
+## Phase 1: Catalyst Fork Preparation 🔄 IN PROGRESS
 
 ### Day 4: Fork and Initial Setup 🔄 IN PROGRESS
-- [x] Renamed main package from "lapce" to "catalyst" in root Cargo.toml
+- [x] Renamed main package from "catalyst" to "catalyst" in root Cargo.toml
 - [x] Updated binary names (catalyst, catalyst-proxy) 
-- [x] Renamed binary files (lapce.rs → catalyst.rs, lapce-proxy.rs → catalyst-proxy.rs)
+- [x] Renamed binary files (catalyst.rs → catalyst.rs, catalyst-proxy.rs → catalyst-proxy.rs)
 - [x] Updated homepage to catalyst-ide.dev
 - [x] Added testing dependencies (criterion, rstest)
 - [x] Created CATALYST_CHANGES.md tracking document
 - [ ] Update all package references throughout workspace
 - [ ] Update README.md and documentation references
 - [ ] Set up development environment verification
-- [ ] Verify existing Lapce tests still pass
+- [ ] Verify existing Catalyst tests still pass
 - [ ] Create baseline performance measurements
 
 ### Changes Made So Far:
 
 #### File Renames:
-- `lapce-app/src/bin/lapce.rs` → `lapce-app/src/bin/catalyst.rs`
-- `lapce-proxy/src/bin/lapce-proxy.rs` → `lapce-proxy/src/bin/catalyst-proxy.rs`
+- `catalyst-app/src/bin/catalyst.rs` → `catalyst-app/src/bin/catalyst.rs`
+- `catalyst-proxy/src/bin/catalyst-proxy.rs` → `catalyst-proxy/src/bin/catalyst-proxy.rs`
 
 #### Cargo.toml Updates:
 ```toml
 # Root package name
-name = "catalyst" (was "lapce")
-default-run = "catalyst" (was "lapce")
-homepage = "https://catalyst-ide.dev" (was "https://lapce.dev")
+name = "catalyst" (was "catalyst")
+default-run = "catalyst" (was "catalyst")
+homepage = "https://catalyst-ide.dev" (was "https://catalyst.dev")
 
 # Binary configurations
 [[bin]]
-name = "catalyst" (was "lapce") 
-path = "lapce-app/src/bin/catalyst.rs" (was "lapce.rs")
+name = "catalyst" (was "catalyst") 
+path = "catalyst-app/src/bin/catalyst.rs" (was "catalyst.rs")
 
 [[bin]]
-name = "catalyst-proxy" (was "lapce-proxy")
-path = "lapce-proxy/src/bin/catalyst-proxy.rs" (was "lapce-proxy.rs")
+name = "catalyst-proxy" (was "catalyst-proxy")
+path = "catalyst-proxy/src/bin/catalyst-proxy.rs" (was "catalyst-proxy.rs")
 
 # Added testing dependencies
 criterion = { version = "0.5", features = ["html_reports"] }
@@ -91,5 +91,5 @@ rstest = { version = "0.21" }
 
 ## Build Status:
 - Binary names updated but may need cargo clean and rebuild
-- Workspace members still reference original Lapce names
+- Workspace members still reference original Catalyst names
 - Need to verify all references are updated before proceeding

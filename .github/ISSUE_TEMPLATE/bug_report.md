@@ -7,9 +7,9 @@ assignees: ''
 
 ---
 
-## Lapce Version
+## Catalyst Version
 
-The Lapce version you are using, which can be found in "About Lapce" at the top right settings icon. 
+The Catalyst version you are using, which can be found in "About Catalyst" at the top right settings icon. 
 
 ## System information
 

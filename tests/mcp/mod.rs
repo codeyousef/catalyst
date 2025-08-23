@@ -21,6 +21,9 @@ use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
 use std::collections::HashMap;
 
+pub mod mock_server;
+pub mod protocol_compliance;
+pub mod health_check;
 pub mod filesystem_server;
 pub mod git_server; 
 pub mod github_server;

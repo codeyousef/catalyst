@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+    <id>dev.catalyst.catalyst</id>
+    <name>Catalyst</name>
+    <developer_name>Dongdong Zhou, et al.</developer_name>
+    <summary>Lightning-fast and powerful code editor written in Rust</summary>
+    <metadata_license>MIT</metadata_license>
+    <project_license>Apache-2.0</project_license>
+    <url type="homepage">https://catalyst-ide.dev/</url>
+    <url type="bugtracker">https://github.com/catalyst-ide/catalyst/issues</url>
+    <url type="help">https://docs.catalyst-ide.dev/</url>
+    <description>
+        <p>
+            Catalyst is an open source IDE written in Rust. By utilising native GUI and GPU rendering, and with the performance Rust provides, Catalyst is one of the fastest IDEs out there.
+        </p>
+        <p>Features:</p>
+        <ul>
+            <li>Modal Editing (Vim like) support as first class citizen (can be turned off as well)</li>
+            <li>Built-in LSP (Language Server Protocol) support to give you code intelligence like code completion, diagnostics and code actions etc.</li>
+            <li>Built-in remote development support (inspired by VSCode Remote Development) for a seamless "local" experience, benefiting from the full power of the remote system.</li>
+            <li>Plugins can be written in programming languages that can compile to the WASI format (C, Rust, AssemblyScript)</li>
+            <li>Built-in terminal, so you can execute commands in your workspace, without leaving Catalyst.</li>
+        </ul>
+    </description>
+    <content_rating type="oars-1.1" />
+    <launchable type="desktop-id">dev.catalyst.catalyst.desktop</launchable>
+    <screenshots>
+        <screenshot type="default">
+            <image>https://raw.githubusercontent.com/catalyst-ide/catalyst/master/extra/images/screenshot.png</image>
+        </screenshot>
+    </screenshots>
+    <releases>
+        <release version="0.4.2" date="2024-08-07"/>
+    </releases>
+</component>

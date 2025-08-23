@@ -1,0 +1,42 @@
+# Tarpaulin configuration for Catalyst IDE test coverage
+[report]
+# Output formats
+out = ["Html", "Xml", "Json"]
+output-dir = "target/coverage"
+
+# Coverage thresholds
+fail-under = 80.0  # Require 80% coverage minimum
+skip-clean = false
+
+[coverage]
+# Include all workspace members
+all = true
+all-features = true
+
+# Exclude test files from coverage calculation
+exclude-files = [
+    "tests/*",
+    "*/tests/*", 
+    "*/src/bin/*",
+    "**/target/**",
+    "examples/*"
+]
+
+# Run tests with optimizations for more realistic coverage
+release = true
+
+# Timeout for individual tests
+timeout = "120s"
+
+# Follow child processes (useful for integration tests)
+follow-exec = true
+
+# Engine configuration
+engine = "llvm"
+
+# Verbose output for debugging
+verbose = true
+
+[html]
+# HTML report configuration
+title = "Catalyst IDE Coverage Report"
