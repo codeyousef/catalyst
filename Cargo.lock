@@ -778,7 +778,7 @@ dependencies = [
  "tracing-subscriber",
  "unicode-width",
  "url",
- "windows-sys 0.36.1",
+    "windows-sys 0.59.0",
  "zip",
  "zstd",
 ]
@@ -1597,12 +1597,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 
 [[package]]
-name = "downcast-rs"
-version = "2.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea8a8b81cacc08888170eef4d13b775126db426d0b348bee9d18c2c1eaf123cf"
-
-[[package]]
 name = "dpi"
 version = "0.1.1"
 source = "git+https://github.com/rust-windowing/winit?rev=ee245c569d65fdeacf705ee5eedb564508d10ebe#ee245c569d65fdeacf705ee5eedb564508d10ebe"
@@ -1874,12 +1868,11 @@ checksum = "98de4bbd547a563b716d8dfa9aad1cb19bfab00f4fa09a6a4ed21dbcf44ce9c4"
 [[package]]
 name = "floem"
 version = "0.2.0"
-source = "git+https://github.com/lapce/floem?rev=2055dde9833699b65ff052eb63cadbddec91c7ce#2055dde9833699b65ff052eb63cadbddec91c7ce"
+source = "git+https://github.com/lapce/floem?rev=04225165764097b94f6f2c7caf87cacb018252be#04225165764097b94f6f2c7caf87cacb018252be"
 dependencies = [
  "bitflags 2.9.1",
  "clipboard-win",
  "copypasta",
- "downcast-rs 2.0.1",
  "educe",
  "floem-editor-core",
  "floem_reactive",
@@ -1917,7 +1910,7 @@ dependencies = [
 [[package]]
 name = "floem-editor-core"
 version = "0.2.0"
-source = "git+https://github.com/lapce/floem?rev=2055dde9833699b65ff052eb63cadbddec91c7ce#2055dde9833699b65ff052eb63cadbddec91c7ce"
+source = "git+https://github.com/lapce/floem?rev=04225165764097b94f6f2c7caf87cacb018252be#04225165764097b94f6f2c7caf87cacb018252be"
 dependencies = [
  "bitflags 2.9.1",
  "itertools 0.14.0",
@@ -1943,7 +1936,7 @@ dependencies = [
 [[package]]
 name = "floem_reactive"
 version = "0.2.0"
-source = "git+https://github.com/lapce/floem?rev=2055dde9833699b65ff052eb63cadbddec91c7ce#2055dde9833699b65ff052eb63cadbddec91c7ce"
+source = "git+https://github.com/lapce/floem?rev=04225165764097b94f6f2c7caf87cacb018252be#04225165764097b94f6f2c7caf87cacb018252be"
 dependencies = [
  "smallvec",
 ]
@@ -1951,7 +1944,7 @@ dependencies = [
 [[package]]
 name = "floem_renderer"
 version = "0.2.0"
-source = "git+https://github.com/lapce/floem?rev=2055dde9833699b65ff052eb63cadbddec91c7ce#2055dde9833699b65ff052eb63cadbddec91c7ce"
+source = "git+https://github.com/lapce/floem?rev=04225165764097b94f6f2c7caf87cacb018252be#04225165764097b94f6f2c7caf87cacb018252be"
 dependencies = [
  "cosmic-text",
  "futures",
@@ -1967,7 +1960,7 @@ dependencies = [
 [[package]]
 name = "floem_tiny_skia_renderer"
 version = "0.2.0"
-source = "git+https://github.com/lapce/floem?rev=2055dde9833699b65ff052eb63cadbddec91c7ce#2055dde9833699b65ff052eb63cadbddec91c7ce"
+source = "git+https://github.com/lapce/floem?rev=04225165764097b94f6f2c7caf87cacb018252be#04225165764097b94f6f2c7caf87cacb018252be"
 dependencies = [
  "anyhow",
  "floem_renderer",
@@ -1980,7 +1973,7 @@ dependencies = [
 [[package]]
 name = "floem_vger_renderer"
 version = "0.2.0"
-source = "git+https://github.com/lapce/floem?rev=2055dde9833699b65ff052eb63cadbddec91c7ce#2055dde9833699b65ff052eb63cadbddec91c7ce"
+source = "git+https://github.com/lapce/floem?rev=04225165764097b94f6f2c7caf87cacb018252be#04225165764097b94f6f2c7caf87cacb018252be"
 dependencies = [
  "anyhow",
  "floem-vger",
@@ -1989,6 +1982,15 @@ dependencies = [
  "peniko",
  "resvg",
  "wgpu",
+]
+
+[[package]]
+name = "fluent-uri"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "17c704e9dbe1ddd863da1e6ff3567795087b1eb201ce80d8fa81162e1516500d"
+dependencies = [
+    "bitflags 1.3.2",
 ]
 
 [[package]]
@@ -3323,14 +3325,15 @@ checksum = "a7a70ba024b9dc04c27ea2f0c0548feb474ec5c54bba33a7f72f873a39d07b24"
 
 [[package]]
 name = "lsp-types"
-version = "0.95.1"
-source = "git+https://github.com/lapce/lsp-types?rev=feaa1e2ec80975c9dadd400a238ceacf071058e6#feaa1e2ec80975c9dadd400a238ceacf071058e6"
+version = "0.97.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "53353550a17c04ac46c585feb189c2db82154fc84b79c7a66c96c2c644f66071"
 dependencies = [
  "bitflags 1.3.2",
+    "fluent-uri",
  "serde",
  "serde_json",
  "serde_repr",
- "url",
 ]
 
 [[package]]
@@ -4335,7 +4338,6 @@ dependencies = [
 [[package]]
 name = "psp-types"
 version = "0.1.1"
-source = "git+https://github.com/lapce/psp-types?rev=b7d3b60c66c2852e26db6733ac280b69f426f6b8#b7d3b60c66c2852e26db6733ac280b69f426f6b8"
 dependencies = [
  "lsp-types",
  "serde",
@@ -6653,7 +6655,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "056535ced7a150d45159d3a8dc30f91a2e2d588ca0b23f70e56033622b8016f6"
 dependencies = [
  "cc",
- "downcast-rs 1.2.0",
+    "downcast-rs",
  "rustix",
  "scoped-tls",
  "smallvec",
