@@ -1,6 +1,6 @@
 [package]
 name         = "lapce-rpc"
-description  = "Data formats between lapce components"
+description  = "Data formats between catalyst components"
 license      = { workspace = true }
 version      = { workspace = true }
 authors      = { workspace = true }

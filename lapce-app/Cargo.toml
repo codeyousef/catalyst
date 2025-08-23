@@ -6,6 +6,15 @@ authors      = { workspace = true }
 edition      = { workspace = true }
 rust-version = { workspace = true }
 
+[[bin]]
+name = "catalyst"
+path = "src/bin/catalyst.rs"
+
+# Temporary alias for IDE compatibility - remove after updating IDE config
+[[bin]]
+name = "lapce"
+path = "src/bin/catalyst.rs"
+
 [dependencies]
 alacritty_terminal = { workspace = true }
 anyhow             = { workspace = true }
