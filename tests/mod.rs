@@ -4,7 +4,6 @@
 /// Following strict Test-Driven Development (TDD) principles.
 
 pub mod performance;
-pub mod mcp;
 pub mod integration;
 pub mod unit;
 

@@ -7,9 +7,14 @@
       "Bash(chmod:*)",
       "Bash(cargo test:*)",
       "Bash(python3:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(ln:*)",
+      "Bash(/mnt/d/Projects/Rust/catalyst-workspace/scripts/dev.sh build-public:*)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "/mnt/d/Projects/Rust"
+    ]
   }
 }
