@@ -1,0 +1,14 @@
+//! Plugin API Module
+//!
+//! This module contains the plugin interfaces and extension points for Catalyst IDE.
+//! It allows for modular functionality to be added without modifying core editor code.
+
+pub mod ai_assistant;
+pub mod sidebar;
+pub mod mcp_server;
+pub mod manager;
+
+pub use ai_assistant::*;
+pub use sidebar::*;
+pub use mcp_server::*;
+pub use manager::*;
