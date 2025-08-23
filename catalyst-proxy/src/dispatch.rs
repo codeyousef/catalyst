@@ -2,20 +2,19 @@ use std::{
     collections::{HashMap, HashSet},
     fs, io,
     path::{Path, PathBuf},
+    str::FromStr,
     sync::{
-        Arc,
         atomic::{AtomicU64, Ordering},
+        Arc,
     },
     thread,
     time::Duration,
 };
 
 use alacritty_terminal::{event::WindowSize, event_loop::Msg};
-use anyhow::{Context, Result, anyhow};
+use anyhow::{anyhow, Context, Result};
 use catalyst_rpc::{
-    RequestId, RpcError,
-    buffer::BufferId,
-    core::{CoreNotification, CoreRpcHandler, FileChanged},
+    buffer::BufferId, core::{CoreNotification, CoreRpcHandler, FileChanged},
     file::FileNodeItem,
     file_line::FileLine,
     proxy::{
@@ -25,26 +24,29 @@ use catalyst_rpc::{
     source_control::{DiffInfo, FileDiff},
     style::{LineStyle, SemanticStyles},
     terminal::TermId,
+    RequestId,
+    RpcError,
 };
 use crossbeam_channel::Sender;
 use git2::{
-    DiffOptions, ErrorCode::NotFound, Oid, Repository, build::CheckoutBuilder,
+    build::CheckoutBuilder, DiffOptions, ErrorCode::NotFound, Oid, Repository,
 };
 use grep_matcher::Matcher;
 use grep_regex::RegexMatcherBuilder;
-use grep_searcher::{SearcherBuilder, sinks::UTF8};
+use grep_searcher::{sinks::UTF8, SearcherBuilder};
 use indexmap::IndexMap;
 use lapce_xi_rope::Rope;
 use lsp_types::{
-    CancelParams, MessageType, NumberOrString, Position, Range, ShowMessageParams,
-    TextDocumentItem, Url,
-    notification::{Cancel, Notification},
+    notification::{Cancel, Notification}, CancelParams, MessageType, NumberOrString, Position, Range,
+    ShowMessageParams, TextDocumentItem,
+    Uri,
 };
 use parking_lot::Mutex;
+use url::Url;
 
 use crate::{
-    buffer::{Buffer, get_mod_time, load_file},
-    plugin::{PluginCatalogRpcHandler, catalog::PluginCatalog},
+    buffer::{get_mod_time, load_file, Buffer},
+    plugin::{catalog::PluginCatalog, PluginCatalogRpcHandler},
     terminal::{Terminal, TerminalSender},
     watcher::{FileWatcher, Notify, WatchToken},
 };
@@ -811,7 +813,7 @@ impl ProxyHandler for Dispatcher {
                     .buffers
                     .iter()
                     .map(|(path, buffer)| TextDocumentItem {
-                        uri: Url::from_file_path(path).unwrap(),
+                        uri: Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap(),
                         language_id: buffer.language_id.to_string(),
                         version: buffer.rev as i32,
                         text: buffer.get_document(),
@@ -1184,7 +1186,14 @@ impl ProxyHandler for Dispatcher {
                 let items: Vec<FileLine> = items
                     .into_iter()
                     .filter_map(|location| {
-                        let Ok(path) = location.uri.to_file_path() else {
+                        let Ok(url) = Url::parse(location.uri.as_str()) else {
+                            tracing::error!(
+                                "failed to parse URI: {:?}",
+                                location.uri
+                            );
+                            return None;
+                        };
+                        let Ok(path) = url.to_file_path() else {
                             tracing::error!(
                                 "get file path fail: {:?}",
                                 location.uri

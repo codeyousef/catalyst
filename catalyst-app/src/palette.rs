@@ -4,9 +4,9 @@ use std::{
     path::PathBuf,
     rc::Rc,
     sync::{
-        Arc,
         atomic::{AtomicU64, Ordering},
-        mpsc::{Receiver, Sender, TryRecvError, channel},
+        mpsc::{channel, Receiver, Sender, TryRecvError},
+        Arc,
     },
     time::Instant,
 };
@@ -22,8 +22,8 @@ use floem::{
     ext_event::{create_ext_action, create_signal_from_channel},
     keyboard::Modifiers,
     reactive::{
-        ReadSignal, RwSignal, Scope, SignalGet, SignalUpdate, SignalWith,
-        use_context,
+        use_context, ReadSignal, RwSignal, Scope, SignalGet, SignalUpdate,
+        SignalWith,
     },
 };
 use im::Vector;
@@ -33,6 +33,7 @@ use lsp_types::{DocumentSymbol, DocumentSymbolResponse};
 use nucleo::Utf32Str;
 use strum::{EnumMessage, IntoEnumIterator};
 use tracing::error;
+use url;
 
 use self::{
     item::{PaletteItem, PaletteItemContent},
@@ -45,10 +46,10 @@ use crate::{
     db::LapceDb,
     debug::{RunDebugConfigs, RunDebugMode},
     editor::{
-        EditorData,
         location::{EditorLocation, EditorPosition},
+        EditorData,
     },
-    keypress::{KeyPressData, KeyPressFocus, condition::Condition},
+    keypress::{condition::Condition, KeyPressData, KeyPressFocus},
     lsp::path_from_url,
     main_split::MainSplitData,
     source_control::SourceControlData,
@@ -1079,7 +1080,7 @@ impl PaletteData {
         let mut items: im::Vector<PaletteItem> = im::Vector::new();
 
         for (name, profile) in profiles.into_iter() {
-            let uri = match lsp_types::Url::parse(&format!(
+            let uri = match url::Url::parse(&format!(
                 "file://{}",
                 profile.workdir.unwrap_or_default().display()
             )) {

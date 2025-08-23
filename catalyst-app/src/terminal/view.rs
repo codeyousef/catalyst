@@ -4,24 +4,24 @@ use alacritty_terminal::{
     grid::Dimensions,
     index::Side,
     selection::{Selection, SelectionType},
-    term::{RenderableContent, cell::Flags, test::TermSize},
+    term::{cell::Flags, test::TermSize, RenderableContent},
 };
 use catalyst_core::mode::Mode;
 use catalyst_rpc::{proxy::ProxyRpcHandler, terminal::TermId};
 use floem::{
-    Renderer, View, ViewId,
-    context::{EventCx, PaintCx},
-    event::{Event, EventPropagation},
-    kurbo::Stroke,
+    context::{EventCx, PaintCx}, event::{Event, EventPropagation}, kurbo::Stroke,
     peniko::{
-        Color,
         kurbo::{Point, Rect, Size},
+        Color,
     },
     pointer::PointerInputEvent,
     prelude::SignalTrack,
-    reactive::{ReadSignal, RwSignal, SignalGet, SignalWith, create_effect},
+    reactive::{create_effect, ReadSignal, RwSignal, SignalGet, SignalWith},
     text::{Attrs, AttrsList, FamilyOwned, TextLayout, Weight},
     views::editor::{core::register::Clipboard, text::SystemClipboard},
+    Renderer,
+    View,
+    ViewId,
 };
 use lsp_types::Position;
 use parking_lot::RwLock;
@@ -31,7 +31,7 @@ use unicode_width::UnicodeWidthChar;
 use super::{panel::TerminalPanelData, raw::RawTerminal};
 use crate::{
     command::InternalCommand,
-    config::{LapceConfig, color::LapceColor},
+    config::{color::LapceColor, LapceConfig},
     debug::RunDebugProcess,
     editor::location::{EditorLocation, EditorPosition},
     listener::Listener,
@@ -157,7 +157,7 @@ impl TerminalView {
         let attrs = Attrs::new().family(&family).font_size(font_size as f32);
         let attrs_list = AttrsList::new(attrs);
         let mut text_layout = TextLayout::new();
-        text_layout.set_text("W", attrs_list);
+        text_layout.set_text("W", attrs_list, None);
         text_layout.size()
     }
 
@@ -475,7 +475,7 @@ impl TerminalView {
 
         for (char, attr, x, y) in &line_content.chars {
             let mut text_layout = TextLayout::new();
-            text_layout.set_text(&char.to_string(), AttrsList::new(attr.clone()));
+            text_layout.set_text(&char.to_string(), AttrsList::new(attr.clone()), None);
             cx.draw_text(&text_layout, Point::new(*x, *y));
         }
     }
@@ -642,6 +642,7 @@ impl View for TerminalView {
                 AttrsList::new(
                     attrs.color(config.color(LapceColor::EDITOR_FOREGROUND)),
                 ),
+                None,
             );
             cx.draw_text(
                 &text_layout,

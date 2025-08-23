@@ -3,34 +3,36 @@ use std::{
     collections::HashMap,
     path::PathBuf,
     sync::{
-        Arc,
         atomic::{AtomicUsize, Ordering},
+        Arc,
     },
     thread,
 };
 
+use url::Url;
+
 use catalyst_rpc::{
-    RpcError,
     dap_types::{self, DapId, DapServer, SetBreakpointsResponse},
     plugin::{PluginId, VoltID, VoltInfo, VoltMetadata},
     proxy::ProxyResponse,
     style::LineStyle,
+    RpcError,
 };
 use lapce_xi_rope::{Rope, RopeDelta};
 use lsp_types::{
-    DidOpenTextDocumentParams, MessageType, SemanticTokens, ShowMessageParams,
-    TextDocumentIdentifier, TextDocumentItem, VersionedTextDocumentIdentifier,
-    notification::DidOpenTextDocument, request::Request,
+    notification::DidOpenTextDocument, request::Request, DidOpenTextDocumentParams, MessageType,
+    SemanticTokens, ShowMessageParams, TextDocumentIdentifier,
+    TextDocumentItem, VersionedTextDocumentIdentifier,
 };
 use parking_lot::Mutex;
 use psp_types::Notification;
 use serde_json::Value;
 
 use super::{
-    PluginCatalogNotification, PluginCatalogRpcHandler,
-    dap::{DapClient, DapRpcHandler, DebuggerData},
-    psp::{ClonableCallback, PluginServerRpc, PluginServerRpcHandler, RpcCallback},
+    dap::{DapClient, DapRpcHandler, DebuggerData}, psp::{ClonableCallback, PluginServerRpc, PluginServerRpcHandler, RpcCallback},
     wasi::{load_all_volts, start_volt},
+    PluginCatalogNotification,
+    PluginCatalogRpcHandler,
 };
 use crate::plugin::{
     install_volt, psp::PluginHandlerNotification, wasi::enable_volt,
@@ -283,12 +285,12 @@ impl PluginCatalog {
     }
 
     pub fn handle_did_open_text_document(&mut self, document: TextDocumentItem) {
-        match document.uri.to_file_path() {
-            Ok(path) => {
+        match Url::parse(document.uri.as_str()).ok().and_then(|url| url.to_file_path().ok()) {
+            Some(path) => {
                 self.open_files.insert(path, document.language_id.clone());
             }
-            Err(err) => {
-                tracing::error!("{:?}", err);
+            None => {
+                tracing::error!("failed to convert URI to file path: {:?}", document.uri);
             }
         }
 
@@ -306,7 +308,7 @@ impl PluginCatalog {
             .collect();
         self.start_unactivated_volts(to_be_activated);
 
-        let path = document.uri.to_file_path().ok();
+        let path = Url::parse(document.uri.as_str()).ok().and_then(|url| url.to_file_path().ok());
         for (_, plugin) in self.plugins.iter() {
             plugin.server_notification(
                 DidOpenTextDocument::METHOD,
@@ -494,7 +496,7 @@ impl PluginCatalog {
                     Ok(ProxyResponse::GetOpenFilesContentResponse { items }) => {
                         for item in items {
                             let language_id = Some(item.language_id.clone());
-                            let path = item.uri.to_file_path().ok();
+                            let path = Url::parse(item.uri.as_str()).ok().and_then(|url| url.to_file_path().ok());
                             plugin.server_notification(
                                 DidOpenTextDocument::METHOD,
                                 DidOpenTextDocumentParams {

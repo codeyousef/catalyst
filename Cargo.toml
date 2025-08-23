@@ -52,8 +52,8 @@ criterion = { version = "0.5", features = ["html_reports"] }
 rstest    = { version = "0.21" }
 walkdir   = { version = "2.5" }
 
-lsp-types = { version = "0.95.1", features = ["proposed"] }                                                  # not following semver, so should be locked to patch version updates only
-psp-types = { git = "https://github.com/lapce/psp-types", rev = "f7fea28f59e7b2d6faa1034a21679ad49b3524ad" }
+lsp-types = { version = "0.97.0", features = ["proposed"] }                                                  # not following semver, so should be locked to patch version updates only
+psp-types = { path = "../psp-types-patched" }
 
 lapce-xi-rope = { version = "0.3.2", features = ["serde"] }
 
@@ -61,15 +61,16 @@ catalyst-core  = { path = "./catalyst-core" }
 catalyst-rpc   = { path = "./catalyst-rpc" }
 catalyst-proxy = { path = "./catalyst-proxy" }
 
-floem = { git = "https://github.com/lapce/floem", rev = "2055dde9833699b65ff052eb63cadbddec91c7ce", features = ["editor", "serde", "default-image-formats", "rfd-async-std"] }
+floem = { git = "https://github.com/lapce/floem", rev = "04225165764097b94f6f2c7caf87cacb018252be", features = ["editor", "serde", "default-image-formats", "rfd-async-std"] }
 # floem = { path = "../floem", features = ["editor", "serde", "default-image-formats", "rfd-async-std"] }
-floem-editor-core = { git = "https://github.com/lapce/floem", rev = "2055dde9833699b65ff052eb63cadbddec91c7ce", features = ["serde"] }
+floem-editor-core = { git = "https://github.com/lapce/floem", rev = "04225165764097b94f6f2c7caf87cacb018252be", features = ["serde"] }
 # floem-editor-core = { path = "../floem/editor-core/", features = ["serde"] }
 
 [patch.crates-io]
 # Temporarily patch lsp-types with a version that adds message-type debug
-lsp-types = { git = "https://github.com/lapce/lsp-types", rev = "feaa1e2ec80975c9dadd400a238ceacf071058e6" }
+# lsp-types = { git = "https://github.com/lapce/lsp-types", rev = "feaa1e2ec80975c9dadd400a238ceacf071058e6" }
 regalloc2 = { rev = "5d79e12d0a93b10fc181f4da409b4671dd365228", git = "https://github.com/bytecodealliance/regalloc2" }
+
 
 # cargo vendor issue: https://github.com/rust-lang/cargo/issues/10310
 # dpi comes from winit (source) and muda (crate)

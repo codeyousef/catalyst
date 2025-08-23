@@ -4,16 +4,17 @@ use std::{
     io::{BufRead, BufReader, BufWriter, Write},
     path::{Path, PathBuf},
     process::{self, Child, Command, Stdio},
+    str::FromStr,
     sync::Arc,
     thread,
 };
 
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use catalyst_core::meta;
 use catalyst_rpc::{
-    RpcError,
     plugin::{PluginId, VoltID},
     style::LineStyle,
+    RpcError,
 };
 use jsonrpc_lite::{Id, Params};
 use lapce_xi_rope::Rope;
@@ -24,13 +25,14 @@ use lsp_types::{
 };
 use parking_lot::Mutex;
 use serde_json::Value;
+use url::Url;
 
 use super::{
     client_capabilities,
     psp::{
-        PluginHandlerNotification, PluginHostHandler, PluginServerHandler,
-        PluginServerRpcHandler, ResponseSender, RpcCallback,
-        handle_plugin_server_message,
+        handle_plugin_server_message, PluginHandlerNotification, PluginHostHandler,
+        PluginServerHandler, PluginServerRpcHandler, ResponseSender,
+        RpcCallback,
     },
 };
 use crate::{buffer::Buffer, plugin::PluginCatalogRpcHandler};
@@ -180,13 +182,14 @@ impl LspClient {
         spawned_by: Option<PluginId>,
         plugin_id: Option<PluginId>,
         pwd: Option<PathBuf>,
-        server_uri: Url,
+        server_uri: Uri,
         args: Vec<String>,
         options: Option<Value>,
     ) -> Result<Self> {
-        let server = match server_uri.scheme() {
+        let url = Url::parse(server_uri.as_str()).map_err(|_| anyhow!("invalid URI"))?;
+        let server = match url.scheme() {
             "file" => {
-                let path = server_uri.to_file_path().map_err(|_| anyhow!(""))?;
+                let path = url.to_file_path().map_err(|_| anyhow!(""))?;
                 #[cfg(unix)]
                 if let Err(err) = std::process::Command::new("chmod")
                     .arg("+x")
@@ -197,7 +200,7 @@ impl LspClient {
                 }
                 path.to_str().ok_or_else(|| anyhow!(""))?.to_string()
             }
-            "urn" => server_uri.path().to_string(),
+            "urn" => url.path().to_string(),
             _ => return Err(anyhow!("uri not supported")),
         };
 
@@ -332,7 +335,7 @@ impl LspClient {
         spawned_by: Option<PluginId>,
         plugin_id: Option<PluginId>,
         pwd: Option<PathBuf>,
-        server_uri: Url,
+        server_uri: Uri,
         args: Vec<String>,
         options: Option<Value>,
     ) -> Result<PluginId> {
@@ -362,7 +365,7 @@ impl LspClient {
         let root_uri = self
             .workspace
             .clone()
-            .map(|p| Url::from_directory_path(p).unwrap());
+            .map(|p| Uri::from_str(&Url::from_directory_path(p).unwrap().to_string()).unwrap());
         tracing::debug!("initialization_options {:?}", self.options);
         #[allow(deprecated)]
         let params = InitializeParams {

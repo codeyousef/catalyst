@@ -1,15 +1,16 @@
 use std::{ops::AddAssign, rc::Rc};
 
 use floem::{
-    IntoView, View, ViewId,
-    reactive::{RwSignal, SignalGet, SignalUpdate, SignalWith},
-    style::CursorStyle,
-    views::{
-        Decorators, VirtualVector, container, empty, label, scroll, stack, svg,
-        virtual_stack,
+    reactive::{RwSignal, SignalGet, SignalUpdate, SignalWith}, style::CursorStyle, views::{
+        container, empty, label, scroll, stack, svg, virtual_stack, Decorators,
+        VirtualVector,
     },
+    IntoView,
+    View,
+    ViewId,
 };
 use lsp_types::{CallHierarchyItem, Range};
+use url;
 
 use super::position::PanelPosition;
 use crate::{
@@ -221,7 +222,8 @@ pub fn show_hierarchy_panel(
                             );
                         }
                         let data = data.get_untracked();
-                        if let Ok(path) = data.item.uri.to_file_path() {
+                        if let Ok(url) = url::Url::parse(data.item.uri.as_str()) {
+                            if let Ok(path) = url.to_file_path() {
                             window_tab_data
                                 .common
                                 .internal_command
@@ -232,6 +234,7 @@ pub fn show_hierarchy_panel(
                                     ignore_unconfirmed: false,
                                     same_editor_tab: false,
                                 } });
+                            }
                         }
                     }
                 })

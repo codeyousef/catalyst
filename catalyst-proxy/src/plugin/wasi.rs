@@ -7,38 +7,40 @@ use std::{
     io::{Read, Seek, Write},
     path::{Path, PathBuf},
     process,
+    str::FromStr,
     sync::{Arc, RwLock},
     thread,
 };
 
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use catalyst_core::directory::Directory;
 use catalyst_rpc::{
-    RpcError,
     plugin::{PluginId, VoltID, VoltInfo, VoltMetadata},
     style::LineStyle,
+    RpcError,
 };
 use jsonrpc_lite::{Id, Params};
 use lapce_xi_rope::{Rope, RopeDelta};
 use lsp_types::{
-    DocumentFilter, InitializeParams, InitializedParams,
-    TextDocumentContentChangeEvent, TextDocumentIdentifier, Url,
-    VersionedTextDocumentIdentifier, WorkDoneProgressParams, WorkspaceFolder,
-    notification::Initialized, request::Initialize,
+    notification::Initialized, request::Initialize, DocumentFilter,
+    InitializeParams, InitializedParams, TextDocumentContentChangeEvent,
+    TextDocumentIdentifier, Uri, VersionedTextDocumentIdentifier,
+    WorkDoneProgressParams, WorkspaceFolder,
 };
 use parking_lot::Mutex;
 use psp_types::{Notification, Request};
 use serde_json::Value;
-use wasi_experimental_http_wasmtime::{HttpCtx, HttpState};
+use url::Url;
+// use wasi_experimental_http_wasmtime::{HttpCtx, HttpState};
 use wasmtime_wasi::WasiCtxBuilder;
 
 use super::{
-    PluginCatalogRpcHandler, client_capabilities,
-    psp::{
-        PluginHandlerNotification, PluginHostHandler, PluginServerHandler,
-        PluginServerRpc, ResponseSender, RpcCallback, handle_plugin_server_message,
+    client_capabilities, psp::{
+        handle_plugin_server_message, PluginHandlerNotification, PluginHostHandler,
+        PluginServerHandler, PluginServerRpc, ResponseSender, RpcCallback,
     },
     volt_icon,
+    PluginCatalogRpcHandler,
 };
 use crate::plugin::psp::PluginServerRpcHandler;
 
@@ -194,7 +196,7 @@ impl Plugin {
     fn initialize(&mut self) {
         let workspace = self.host.workspace.clone();
         let configurations = self.configurations.as_ref().map(unflatten_map);
-        let root_uri = workspace.map(|p| Url::from_directory_path(p).unwrap());
+        let root_uri = workspace.map(|p| Uri::from_str(&Url::from_directory_path(p).unwrap().to_string()).unwrap());
         let server_rpc = self.host.server_rpc.clone();
         self.host.server_rpc.server_request_async(
             Initialize::METHOD,
@@ -428,10 +430,10 @@ pub fn start_volt(
     )?;
     let mut linker = wasmtime::Linker::new(&engine);
     wasmtime_wasi::add_to_linker(&mut linker, |s| s)?;
-    HttpState::new()?.add_to_linker(&mut linker, |_| HttpCtx {
-        allowed_hosts: Some(vec!["insecure:allow-all".to_string()]),
-        max_concurrent_requests: Some(100),
-    })?;
+    // HttpState::new()?.add_to_linker(&mut linker, |_| HttpCtx {
+    //     allowed_hosts: Some(vec!["insecure:allow-all".to_string()]),
+    //     max_concurrent_requests: Some(100),
+    // })?;
 
     let volt_path = meta
         .dir
@@ -471,9 +473,10 @@ pub fn start_volt(
         .env("VOLT_LIBC", volt_libc)?
         .env(
             "VOLT_URI",
-            Url::from_directory_path(volt_path)
+            Uri::from_str(&Url::from_directory_path(volt_path)
                 .map_err(|_| anyhow!("can't convert folder path to uri"))?
-                .as_ref(),
+                .to_string()).unwrap()
+                .as_str(),
         )?
         .stdin(Box::new(wasi_common::pipe::ReadPipe::from_shared(
             stdin.clone(),

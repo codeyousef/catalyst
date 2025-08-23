@@ -4,8 +4,8 @@ use std::{
     path::{Path, PathBuf},
     rc::Rc,
     sync::{
+        mpsc::{channel, Sender},
         Arc,
-        mpsc::{Sender, channel},
     },
     time::Instant,
 };
@@ -16,7 +16,6 @@ use catalyst_core::{
     mode::Mode, register::Register,
 };
 use catalyst_rpc::{
-    RpcError,
     core::CoreNotification,
     dap_types::{ConfigSource, RunDebugConfig},
     file::{Naming, PathObject},
@@ -24,10 +23,10 @@ use catalyst_rpc::{
     proxy::{ProxyResponse, ProxyRpcHandler, ProxyStatus},
     source_control::FileDiff,
     terminal::TermId,
+    RpcError,
 };
 use floem::{
-    ViewId,
-    action::{TimerToken, open_file, remove_overlay},
+    action::{open_file, remove_overlay, TimerToken},
     ext_event::{create_ext_action, create_signal_from_channel},
     file::FileDialogOptions,
     keyboard::Modifiers,
@@ -35,11 +34,12 @@ use floem::{
     peniko::kurbo::{Point, Rect, Vec2},
     prelude::SignalTrack,
     reactive::{
-        Memo, ReadSignal, RwSignal, Scope, SignalGet, SignalUpdate, SignalWith,
-        WriteSignal, use_context,
+        use_context, Memo, ReadSignal, RwSignal, Scope, SignalGet, SignalUpdate,
+        SignalWith, WriteSignal,
     },
     text::{Attrs, AttrsList, FamilyOwned, LineHeightValue, TextLayout},
     views::editor::core::buffer::rope_text::RopeText,
+    ViewId,
 };
 use im::HashMap;
 use indexmap::IndexMap;
@@ -49,7 +49,7 @@ use lsp_types::{
     ShowMessageParams,
 };
 use serde_json::Value;
-use tracing::{Level, debug, error, event};
+use tracing::{debug, error, event, Level};
 
 use crate::{
     about::AboutData,
@@ -72,23 +72,23 @@ use crate::{
     hover::HoverData,
     id::WindowTabId,
     inline_completion::InlineCompletionData,
-    keypress::{EventRef, KeyPressData, KeyPressFocus, condition::Condition},
+    keypress::{condition::Condition, EventRef, KeyPressData, KeyPressFocus},
     listener::Listener,
     lsp::path_from_url,
     main_split::{MainSplitData, SplitData, SplitDirection, SplitMoveDirection},
-    palette::{DEFAULT_RUN_TOML, PaletteData, PaletteStatus, kind::PaletteKind},
+    palette::{kind::PaletteKind, PaletteData, PaletteStatus, DEFAULT_RUN_TOML},
     panel::{
         call_hierarchy_view::{CallHierarchyData, CallHierarchyItemData},
-        data::{PanelData, PanelSection, default_panel_order},
+        data::{default_panel_order, PanelData, PanelSection},
         kind::PanelKind,
         position::PanelContainerPosition,
     },
     plugin::PluginData,
-    proxy::{ProxyData, new_proxy},
+    proxy::{new_proxy, ProxyData},
     rename::RenameData,
     source_control::SourceControlData,
     terminal::{
-        event::{TermEvent, TermNotification, terminal_update_process},
+        event::{terminal_update_process, TermEvent, TermNotification},
         panel::TerminalPanelData,
     },
     tracing::*,
@@ -358,7 +358,7 @@ impl WindowTabData {
                 .font_size(config.ui.font_size() as f32)
                 .line_height(LineHeightValue::Normal(1.8));
             let attrs_list = AttrsList::new(attrs);
-            text_layout.set_text("W", attrs_list);
+            text_layout.set_text("W", attrs_list, None);
             text_layout.size().height
         });
 
@@ -2277,7 +2277,7 @@ impl WindowTabData {
                 target,
             } => {
                 use catalyst_rpc::core::LogLevel;
-                use tracing_log::log::{Level, log};
+                use tracing_log::log::{log, Level};
 
                 let target = target.clone().unwrap_or(String::from("unknown"));
 
@@ -2301,7 +2301,7 @@ impl WindowTabData {
             }
             CoreNotification::LogMessage { message, target } => {
                 use lsp_types::MessageType;
-                use tracing_log::log::{Level, log};
+                use tracing_log::log::{log, Level};
                 match message.typ {
                     MessageType::ERROR => {
                         log!(target: target, Level::Error, "{}", message.message)
@@ -2311,9 +2311,6 @@ impl WindowTabData {
                     }
                     MessageType::INFO => {
                         log!(target: target, Level::Info, "{}", message.message)
-                    }
-                    MessageType::DEBUG => {
-                        log!(target: target, Level::Debug, "{}", message.message)
                     }
                     MessageType::LOG => {
                         log!(target: target, Level::Debug, "{}", message.message)
@@ -2936,7 +2933,7 @@ impl WindowTabData {
             return;
         };
         let root_item = item;
-        let path: PathBuf = item.get_untracked().item.uri.to_file_path().unwrap();
+        let path: PathBuf = url::Url::parse(item.get_untracked().item.uri.as_str()).unwrap().to_file_path().unwrap();
         let scope = self.scope;
         let send =
             create_ext_action(scope, move |_rs: Result<ProxyResponse, RpcError>| {

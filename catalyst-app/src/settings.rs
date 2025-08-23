@@ -3,22 +3,22 @@ use std::{collections::BTreeMap, rc::Rc, sync::Arc, time::Duration};
 use catalyst_core::{buffer::rope_text::RopeText, mode::Mode};
 use catalyst_rpc::plugin::VoltID;
 use floem::{
-    IntoView, View,
-    action::{TimerToken, add_overlay, exec_after, remove_overlay},
-    event::EventListener,
+    action::{add_overlay, exec_after, remove_overlay, TimerToken}, event::EventListener,
     keyboard::Modifiers,
     peniko::kurbo::{Point, Rect, Size},
     reactive::{
-        Memo, ReadSignal, RwSignal, Scope, SignalGet, SignalUpdate, SignalWith,
-        create_effect, create_memo, create_rw_signal,
+        create_effect, create_memo, create_rw_signal, Memo, ReadSignal, RwSignal, Scope,
+        SignalGet, SignalUpdate, SignalWith,
     },
     style::CursorStyle,
     text::{Attrs, AttrsList, FamilyOwned, TextLayout},
     views::{
-        Decorators, VirtualVector, container, dyn_stack, empty, label,
-        scroll::{PropagatePointerWheel, scroll},
-        stack, svg, text, virtual_stack,
+        container, dyn_stack, empty, label, scroll::{scroll, PropagatePointerWheel}, stack,
+        svg,
+        text, virtual_stack, Decorators, VirtualVector,
     },
+    IntoView,
+    View,
 };
 use indexmap::IndexMap;
 use inflector::Inflector;
@@ -29,9 +29,9 @@ use serde_json::Value;
 use crate::{
     command::CommandExecuted,
     config::{
-        DropdownInfo, LapceConfig, color::LapceColor, core::CoreConfig,
-        editor::EditorConfig, icon::LapceIcons, terminal::TerminalConfig,
-        ui::UIConfig,
+        color::LapceColor, core::CoreConfig, editor::EditorConfig, icon::LapceIcons,
+        terminal::TerminalConfig, ui::UIConfig, DropdownInfo,
+        LapceConfig,
     },
     keypress::KeyPressFocus,
     main_split::Editors,
@@ -1044,7 +1044,7 @@ pub fn theme_color_settings_view(
             .family(&family)
             .font_size(config.ui.font_size() as f32);
         let attrs_list = AttrsList::new(attrs);
-        text_layout.set_text("W", attrs_list);
+        text_layout.set_text("W", attrs_list, None);
         text_layout.size().height
     });
 
@@ -1060,14 +1060,14 @@ pub fn theme_color_settings_view(
 
         let mut max_width = 0.0;
         for key in config.color_theme.ui.keys() {
-            text_layout.set_text(key, attrs_list.clone());
+            text_layout.set_text(key, attrs_list.clone(), None);
             let width = text_layout.size().width;
             if width > max_width {
                 max_width = width;
             }
         }
         for key in config.color_theme.syntax.keys() {
-            text_layout.set_text(key, attrs_list.clone());
+            text_layout.set_text(key, attrs_list.clone(), None);
             let width = text_layout.size().width;
             if width > max_width {
                 max_width = width;

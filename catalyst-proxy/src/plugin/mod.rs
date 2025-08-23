@@ -9,57 +9,30 @@ use std::{
     collections::HashMap,
     fs,
     path::{Path, PathBuf},
+    str::FromStr,
     sync::{
-        Arc,
         atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering},
+        Arc,
     },
     time::Duration,
 };
 
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use catalyst_core::directory::Directory;
 use catalyst_rpc::{
-    RequestId, RpcError,
-    core::CoreRpcHandler,
-    dap_types::{self, DapId, RunDebugConfig, SourceBreakpoint, ThreadId},
+    core::CoreRpcHandler, dap_types::{self, DapId, RunDebugConfig, SourceBreakpoint, ThreadId},
     plugin::{PluginId, VoltInfo, VoltMetadata},
     proxy::ProxyRpcHandler,
     style::LineStyle,
     terminal::TermId,
+    RequestId,
+    RpcError,
 };
 use crossbeam_channel::{Receiver, Sender};
 use dyn_clone::DynClone;
 use flate2::read::GzDecoder;
 use lapce_xi_rope::{Rope, RopeDelta};
 use lsp_types::{
-    CallHierarchyClientCapabilities, CallHierarchyIncomingCall,
-    CallHierarchyIncomingCallsParams, CallHierarchyItem, CallHierarchyPrepareParams,
-    ClientCapabilities, CodeAction, CodeActionCapabilityResolveSupport,
-    CodeActionClientCapabilities, CodeActionContext, CodeActionKind,
-    CodeActionKindLiteralSupport, CodeActionLiteralSupport, CodeActionParams,
-    CodeActionResponse, CodeLens, CodeLensParams, CompletionClientCapabilities,
-    CompletionItem, CompletionItemCapability,
-    CompletionItemCapabilityResolveSupport, CompletionParams, CompletionResponse,
-    Diagnostic, DocumentFormattingParams, DocumentSymbolClientCapabilities,
-    DocumentSymbolParams, DocumentSymbolResponse, FoldingRange,
-    FoldingRangeClientCapabilities, FoldingRangeParams, FormattingOptions,
-    GotoCapability, GotoDefinitionParams, GotoDefinitionResponse, Hover,
-    HoverClientCapabilities, HoverParams, InlayHint, InlayHintClientCapabilities,
-    InlayHintParams, InlineCompletionClientCapabilities, InlineCompletionParams,
-    InlineCompletionResponse, InlineCompletionTriggerKind, Location, MarkupKind,
-    MessageActionItemCapabilities, ParameterInformationSettings,
-    PartialResultParams, Position, PrepareRenameResponse,
-    PublishDiagnosticsClientCapabilities, Range, ReferenceContext, ReferenceParams,
-    RenameParams, SelectionRange, SelectionRangeParams, SemanticTokens,
-    SemanticTokensClientCapabilities, SemanticTokensParams,
-    ShowMessageRequestClientCapabilities, SignatureHelp,
-    SignatureHelpClientCapabilities, SignatureHelpParams,
-    SignatureInformationSettings, SymbolInformation, TextDocumentClientCapabilities,
-    TextDocumentIdentifier, TextDocumentItem, TextDocumentPositionParams,
-    TextDocumentSyncClientCapabilities, TextEdit, Url,
-    VersionedTextDocumentIdentifier, WindowClientCapabilities,
-    WorkDoneProgressParams, WorkspaceClientCapabilities, WorkspaceEdit,
-    WorkspaceSymbolClientCapabilities, WorkspaceSymbolParams,
     request::{
         CallHierarchyIncomingCalls, CallHierarchyPrepare, CodeActionRequest,
         CodeActionResolveRequest, CodeLensRequest, CodeLensResolve, Completion,
@@ -69,13 +42,42 @@ use lsp_types::{
         InlayHintRequest, InlineCompletionRequest, PrepareRenameRequest, References,
         Rename, Request, ResolveCompletionItem, SelectionRangeRequest,
         SemanticTokensFullRequest, SignatureHelpRequest, WorkspaceSymbolRequest,
-    },
+    }, CallHierarchyClientCapabilities,
+    CallHierarchyIncomingCall, CallHierarchyIncomingCallsParams, CallHierarchyItem,
+    CallHierarchyPrepareParams, ClientCapabilities, CodeAction,
+    CodeActionCapabilityResolveSupport, CodeActionClientCapabilities, CodeActionContext,
+    CodeActionKind, CodeActionKindLiteralSupport, CodeActionLiteralSupport,
+    CodeActionParams, CodeActionResponse, CodeLens, CodeLensParams,
+    CompletionClientCapabilities, CompletionItem,
+    CompletionItemCapability, CompletionItemCapabilityResolveSupport, CompletionParams,
+    CompletionResponse, Diagnostic, DocumentFormattingParams,
+    DocumentSymbolClientCapabilities, DocumentSymbolParams, DocumentSymbolResponse,
+    FoldingRange, FoldingRangeClientCapabilities, FoldingRangeParams,
+    FormattingOptions, GotoCapability, GotoDefinitionParams, GotoDefinitionResponse,
+    Hover, HoverClientCapabilities, HoverParams, InlayHint,
+    InlayHintClientCapabilities, InlayHintParams, InlineCompletionClientCapabilities,
+    InlineCompletionParams, InlineCompletionResponse, InlineCompletionTriggerKind, Location,
+    MarkupKind, MessageActionItemCapabilities,
+    ParameterInformationSettings, PartialResultParams, Position,
+    PrepareRenameResponse, PublishDiagnosticsClientCapabilities, Range, ReferenceContext,
+    ReferenceParams, RenameParams, SelectionRange, SelectionRangeParams,
+    SemanticTokens, SemanticTokensClientCapabilities,
+    SemanticTokensParams, ShowMessageRequestClientCapabilities,
+    SignatureHelp, SignatureHelpClientCapabilities,
+    SignatureHelpParams, SignatureInformationSettings, SymbolInformation,
+    TextDocumentClientCapabilities, TextDocumentIdentifier, TextDocumentItem,
+    TextDocumentPositionParams, TextDocumentSyncClientCapabilities, TextEdit,
+    Uri, VersionedTextDocumentIdentifier,
+    WindowClientCapabilities, WorkDoneProgressParams, WorkspaceClientCapabilities,
+    WorkspaceEdit, WorkspaceSymbolClientCapabilities,
+    WorkspaceSymbolParams,
 };
 use parking_lot::Mutex;
-use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::{Map, Value};
 use tar::Archive;
 use tracing::error;
+use url::Url;
 
 use self::{
     catalog::PluginCatalog,
@@ -503,7 +505,7 @@ impl PluginCatalogRpcHandler {
 
     pub fn did_save_text_document(&self, path: &Path, text: Rope) {
         let text_document =
-            TextDocumentIdentifier::new(Url::from_file_path(path).unwrap());
+            TextDocumentIdentifier::new(Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap());
         let language_id = language_id_from_path(path).unwrap_or("").to_string();
         if let Err(err) =
             self.plugin_tx.send(PluginCatalogRpc::DidSaveTextDocument {
@@ -526,7 +528,7 @@ impl PluginCatalogRpcHandler {
         new_text: Rope,
     ) {
         let document = VersionedTextDocumentIdentifier::new(
-            Url::from_file_path(path).unwrap(),
+            Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap(),
             rev as i32,
         );
         let language_id = language_id_from_path(path).unwrap_or("").to_string();
@@ -553,7 +555,7 @@ impl PluginCatalogRpcHandler {
         + Send
         + 'static,
     ) {
-        let uri = Url::from_file_path(path).unwrap();
+        let uri = Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap();
         let method = GotoDefinition::METHOD;
         let params = GotoDefinitionParams {
             text_document_position_params: TextDocumentPositionParams {
@@ -584,7 +586,7 @@ impl PluginCatalogRpcHandler {
         + Send
         + 'static,
     ) {
-        let uri = Url::from_file_path(path).unwrap();
+        let uri = Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap();
         let method = GotoTypeDefinition::METHOD;
         let params = GotoTypeDefinitionParams {
             text_document_position_params: TextDocumentPositionParams {
@@ -644,7 +646,7 @@ impl PluginCatalogRpcHandler {
         + Send
         + 'static,
     ) {
-        let uri = Url::from_file_path(path).unwrap();
+        let uri = Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap();
         let method = CallHierarchyPrepare::METHOD;
         let params = CallHierarchyPrepareParams {
             text_document_position_params: TextDocumentPositionParams {
@@ -674,7 +676,7 @@ impl PluginCatalogRpcHandler {
         + Send
         + 'static,
     ) {
-        let uri = Url::from_file_path(path).unwrap();
+        let uri = Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap();
         let method = References::METHOD;
         let params = ReferenceParams {
             text_document_position: TextDocumentPositionParams {
@@ -709,7 +711,7 @@ impl PluginCatalogRpcHandler {
         + Send
         + 'static,
     ) {
-        let uri = Url::from_file_path(path).unwrap();
+        let uri = Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap();
         let method = FoldingRangeRequest::METHOD;
         let params = FoldingRangeParams {
             text_document: TextDocumentIdentifier { uri },
@@ -737,7 +739,7 @@ impl PluginCatalogRpcHandler {
         + Send
         + 'static,
     ) {
-        let uri = Url::from_file_path(path).unwrap();
+        let uri = Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap();
         let method = GotoImplementation::METHOD;
         let params = GotoTypeDefinitionParams {
             text_document_position_params: TextDocumentPositionParams {
@@ -769,7 +771,7 @@ impl PluginCatalogRpcHandler {
         + Send
         + 'static,
     ) {
-        let uri = Url::from_file_path(path).unwrap();
+        let uri = Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap();
         let method = CodeActionRequest::METHOD;
         let params = CodeActionParams {
             text_document: TextDocumentIdentifier { uri },
@@ -804,7 +806,7 @@ impl PluginCatalogRpcHandler {
         + Send
         + 'static,
     ) {
-        let uri = Url::from_file_path(path).unwrap();
+        let uri = Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap();
         let method = CodeLensRequest::METHOD;
         let params = CodeLensParams {
             text_document: TextDocumentIdentifier { uri },
@@ -852,7 +854,7 @@ impl PluginCatalogRpcHandler {
         + Send
         + 'static,
     ) {
-        let uri = Url::from_file_path(path).unwrap();
+        let uri = Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap();
         let method = InlayHintRequest::METHOD;
         let params = InlayHintParams {
             text_document: TextDocumentIdentifier { uri },
@@ -880,7 +882,7 @@ impl PluginCatalogRpcHandler {
         + Send
         + 'static,
     ) {
-        let uri = Url::from_file_path(path).unwrap();
+        let uri = Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap();
         let method = InlineCompletionRequest::METHOD;
         let params = InlineCompletionParams {
             text_document_position: TextDocumentPositionParams {
@@ -912,7 +914,7 @@ impl PluginCatalogRpcHandler {
         + Send
         + 'static,
     ) {
-        let uri = Url::from_file_path(path).unwrap();
+        let uri = Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap();
         let method = DocumentSymbolRequest::METHOD;
         let params = DocumentSymbolParams {
             text_document: TextDocumentIdentifier { uri },
@@ -955,7 +957,7 @@ impl PluginCatalogRpcHandler {
         + Send
         + 'static,
     ) {
-        let uri = Url::from_file_path(path).unwrap();
+        let uri = Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap();
         let method = Formatting::METHOD;
         let params = DocumentFormattingParams {
             text_document: TextDocumentIdentifier { uri },
@@ -986,7 +988,7 @@ impl PluginCatalogRpcHandler {
         + Send
         + 'static,
     ) {
-        let uri = Url::from_file_path(path).unwrap();
+        let uri = Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap();
         let method = PrepareRenameRequest::METHOD;
         let params = TextDocumentPositionParams {
             text_document: TextDocumentIdentifier { uri },
@@ -1013,7 +1015,7 @@ impl PluginCatalogRpcHandler {
         + Send
         + 'static,
     ) {
-        let uri = Url::from_file_path(path).unwrap();
+        let uri = Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap();
         let method = Rename::METHOD;
         let params = RenameParams {
             text_document_position: TextDocumentPositionParams {
@@ -1042,7 +1044,7 @@ impl PluginCatalogRpcHandler {
         + Send
         + 'static,
     ) {
-        let uri = Url::from_file_path(path).unwrap();
+        let uri = Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap();
         let method = SemanticTokensFullRequest::METHOD;
         let params = SemanticTokensParams {
             text_document: TextDocumentIdentifier { uri },
@@ -1069,7 +1071,7 @@ impl PluginCatalogRpcHandler {
         + Send
         + 'static,
     ) {
-        let uri = Url::from_file_path(path).unwrap();
+        let uri = Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap();
         let method = SelectionRangeRequest::METHOD;
         let params = SelectionRangeParams {
             text_document: TextDocumentIdentifier { uri },
@@ -1094,7 +1096,7 @@ impl PluginCatalogRpcHandler {
         position: Position,
         cb: impl FnOnce(PluginId, Result<Hover, RpcError>) + Clone + Send + 'static,
     ) {
-        let uri = Url::from_file_path(path).unwrap();
+        let uri = Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap();
         let method = HoverRequest::METHOD;
         let params = HoverParams {
             text_document_position_params: TextDocumentPositionParams {
@@ -1122,7 +1124,7 @@ impl PluginCatalogRpcHandler {
         input: String,
         position: Position,
     ) {
-        let uri = Url::from_file_path(path).unwrap();
+        let uri = Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap();
         let method = Completion::METHOD;
         let params = CompletionParams {
             text_document_position: TextDocumentPositionParams {
@@ -1202,7 +1204,7 @@ impl PluginCatalogRpcHandler {
         path: &Path,
         position: Position,
     ) {
-        let uri = Url::from_file_path(path).unwrap();
+        let uri = Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap();
         let method = SignatureHelpRequest::METHOD;
         let params = SignatureHelpParams {
             // TODO: We could provide more information about the signature for the LSP to work with
@@ -1284,11 +1286,12 @@ impl PluginCatalogRpcHandler {
         text: String,
     ) {
         match Url::from_file_path(path) {
-            Ok(path) => {
+            Ok(url) => {
+                let uri = Uri::from_str(&url.to_string()).unwrap();
                 if let Err(err) =
                     self.plugin_tx.send(PluginCatalogRpc::DidOpenTextDocument {
                         document: TextDocumentItem::new(
-                            path,
+                            uri,
                             language_id,
                             version,
                             text,

@@ -12,29 +12,29 @@ use std::collections::HashMap;
 pub trait AiAssistantPlugin: Send + Sync {
     /// Initialize the AI assistant plugin
     fn initialize(&mut self) -> Result<()>;
-    
+
     /// Get plugin information
     fn plugin_info(&self) -> AiPluginInfo;
-    
+
     /// Check if the assistant is authenticated and ready
     fn is_authenticated(&self) -> bool;
-    
+
     /// Send a message to the AI assistant
     fn send_message(&self, request: AiMessageRequest) -> Result<AiMessageResponse>;
-    
+
     /// Stream a message from the AI assistant
     fn stream_message(
         &self,
         request: AiMessageRequest,
         callback: Box<dyn Fn(AiStreamChunk) + Send>,
     ) -> Result<()>;
-    
+
     /// Get available tools/capabilities
     fn get_capabilities(&self) -> Vec<AiCapability>;
-    
+
     /// Handle authentication flow
     fn authenticate(&mut self, auth_data: AiAuthData) -> Result<AiAuthResult>;
-    
+
     /// Get current usage/cost information
     fn get_usage_info(&self) -> Option<AiUsageInfo>;
 }

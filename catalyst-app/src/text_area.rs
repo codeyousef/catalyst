@@ -1,12 +1,12 @@
 use catalyst_core::buffer::rope_text::RopeText;
 use floem::{
-    View,
     peniko::kurbo::Rect,
     reactive::{
-        SignalGet, SignalUpdate, SignalWith, create_effect, create_rw_signal,
+        create_effect, create_rw_signal, SignalGet, SignalUpdate, SignalWith,
     },
     text::{Attrs, AttrsList, LineHeightValue, TextLayout},
-    views::{Decorators, container, label, rich_text, scroll, stack},
+    views::{container, label, rich_text, scroll, stack, Decorators},
+    View,
 };
 
 use crate::{config::color::LapceColor, editor::EditorData};
@@ -36,7 +36,7 @@ pub fn text_area(
         let doc = doc.get();
         let text = doc.buffer.with(|b| b.to_string());
         text_layout.update(|text_layout| {
-            text_layout.set_text(&text, attrs_list);
+            text_layout.set_text(&text, attrs_list, None);
         });
     });
 
@@ -59,7 +59,7 @@ pub fn text_area(
         let doc = doc.get();
         let text = doc.buffer.with(|b| b.to_string());
         text_layout.update(|text_layout| {
-            text_layout.set_text(&text, attrs_list);
+            text_layout.set_text(&text, attrs_list, None);
         });
 
         rev

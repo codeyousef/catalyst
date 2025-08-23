@@ -1,16 +1,21 @@
 use std::path::PathBuf;
 
-use tracing::{Level, event};
+use lsp_types::Uri;
+use tracing::{event, Level};
 use url::Url;
 
 // Rust-analyzer returns paths in the form of "file:///<drive>:/...", which gets parsed into URL
 // as "/<drive>://" which is then interpreted by PathBuf::new() as a UNIX-like path from root.
 // This function strips the additional / from the beginning, if the first segment is a drive letter.
 #[cfg(windows)]
-pub fn path_from_url(url: &Url) -> PathBuf {
+pub fn path_from_url(uri: &Uri) -> PathBuf {
     use percent_encoding::percent_decode_str;
 
-    event!(Level::DEBUG, "Converting `{:?}` to path", url);
+    event!(Level::DEBUG, "Converting `{:?}` to path", uri);
+
+    let url = url::Url::parse(uri.as_str()).unwrap_or_else(|_| {
+        panic!("Invalid URI: {}", uri.as_str());
+    });
 
     if let Ok(path) = url.to_file_path() {
         return path;
@@ -80,8 +85,11 @@ pub fn path_from_url(url: &Url) -> PathBuf {
 }
 
 #[cfg(not(windows))]
-pub fn path_from_url(url: &Url) -> PathBuf {
-    event!(Level::DEBUG, "Converting `{:?}` to path", url);
+pub fn path_from_url(uri: &Uri) -> PathBuf {
+    event!(Level::DEBUG, "Converting `{:?}` to path", uri);
+    let url = url::Url::parse(uri.as_str()).unwrap_or_else(|_| {
+        panic!("Invalid URI: {}", uri.as_str());
+    });
     url.to_file_path().unwrap_or_else(|_| {
         let path = url.path();
         if let Ok(path) = percent_encoding::percent_decode_str(path).decode_utf8() {

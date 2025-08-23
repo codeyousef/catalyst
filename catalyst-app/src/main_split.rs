@@ -4,6 +4,8 @@ use std::{
     rc::Rc,
 };
 
+use url;
+
 use catalyst_core::{
     buffer::rope_text::RopeText, command::FocusCommand, cursor::Cursor,
     rope_text_pos::RopeTextPosition, selection::Selection, syntax::Syntax,
@@ -24,14 +26,14 @@ use floem::{
     views::editor::id::EditorId,
 };
 use itertools::Itertools;
-use lapce_xi_rope::{Rope, spans::SpansBuilder};
+use lapce_xi_rope::{spans::SpansBuilder, Rope};
 use lsp_types::{
     CodeAction, CodeActionOrCommand, DiagnosticSeverity, DocumentChangeOperation,
-    DocumentChanges, OneOf, Position, TextEdit, Url, WorkspaceEdit,
+    DocumentChanges, OneOf, Position, TextEdit, Uri, WorkspaceEdit,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use tracing::{Level, event};
+use tracing::{event, Level};
 
 use crate::{
     alert::AlertButton,
@@ -39,9 +41,9 @@ use crate::{
     command::InternalCommand,
     doc::{DiagnosticData, Doc, DocContent, DocHistory, EditorDiagnostic},
     editor::{
-        EditorData,
         diff::DiffEditorData,
         location::{EditorLocation, EditorPosition},
+        EditorData,
     },
     editor_tab::{
         EditorTabChild, EditorTabChildSource, EditorTabData, EditorTabInfo,
@@ -2232,7 +2234,8 @@ impl MainSplitData {
 
         if let Some(edits) = workspace_edits(edit) {
             for (url, edits) in edits {
-                if let Ok(path) = url.to_file_path() {
+                if let Ok(url_parsed) = url::Url::parse(url.as_str()) {
+                    if let Ok(path) = url_parsed.to_file_path() {
                     let active_path = self
                         .active_editor
                         .get_untracked()
@@ -2254,6 +2257,7 @@ impl MainSplitData {
                         same_editor_tab: false,
                     };
                     self.jump_to_location(location, Some(edits));
+                    }
                 }
             }
         }
@@ -2996,7 +3000,7 @@ impl MainSplitData {
     }
 }
 
-fn workspace_edits(edit: &WorkspaceEdit) -> Option<HashMap<Url, Vec<TextEdit>>> {
+fn workspace_edits(edit: &WorkspaceEdit) -> Option<HashMap<Uri, Vec<TextEdit>>> {
     if let Some(changes) = edit.changes.as_ref() {
         return Some(changes.clone());
     }
@@ -3017,7 +3021,7 @@ fn workspace_edits(edit: &WorkspaceEdit) -> Option<HashMap<Url, Vec<TextEdit>>> 
                         .collect(),
                 )
             })
-            .collect::<HashMap<Url, Vec<TextEdit>>>(),
+            .collect::<HashMap<Uri, Vec<TextEdit>>>(),
         DocumentChanges::Operations(ops) => ops
             .iter()
             .filter_map(|o| match o {
@@ -3033,7 +3037,7 @@ fn workspace_edits(edit: &WorkspaceEdit) -> Option<HashMap<Url, Vec<TextEdit>>> 
                         .collect(),
                 )),
             })
-            .collect::<HashMap<Url, Vec<TextEdit>>>(),
+            .collect::<HashMap<Uri, Vec<TextEdit>>>(),
     };
     Some(edits)
 }

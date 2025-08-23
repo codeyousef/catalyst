@@ -8,9 +8,9 @@ use std::{
 
 use catalyst_core::{
     buffer::{
-        InvalLines,
         diff::DiffLines,
         rope_text::{RopeText, RopeTextVal},
+        InvalLines,
     },
     command::{
         EditCommand, FocusCommand, MotionModeCommand, MultiSelectionCommand,
@@ -24,8 +24,7 @@ use catalyst_core::{
 };
 use catalyst_rpc::{buffer::BufferId, plugin::PluginId, proxy::ProxyResponse};
 use floem::{
-    ViewId,
-    action::{TimerToken, exec_after, show_context_menu},
+    action::{exec_after, show_context_menu, TimerToken},
     ext_event::create_ext_action,
     keyboard::Modifiers,
     kurbo::{Point, Rect, Vec2},
@@ -33,11 +32,10 @@ use floem::{
     pointer::{MouseButton, PointerInputEvent, PointerMoveEvent},
     prelude::SignalTrack,
     reactive::{
-        ReadSignal, RwSignal, Scope, SignalGet, SignalUpdate, SignalWith, batch,
-        use_context,
+        batch, use_context, ReadSignal, RwSignal, Scope, SignalGet, SignalUpdate,
+        SignalWith,
     },
     views::editor::{
-        Editor,
         command::CommandExecuted,
         id::EditorId,
         movement,
@@ -46,7 +44,9 @@ use floem::{
             DiffSection, DiffSectionKind, LineInfo, ScreenLines, ScreenLinesBase,
         },
         visual_line::{ConfigId, Lines, TextLayoutProvider, VLine, VLineInfo},
+        Editor,
     },
+    ViewId,
 };
 use itertools::Itertools;
 use lapce_xi_rope::{Rope, RopeDelta, Transformer};
@@ -72,11 +72,11 @@ use crate::{
     editor_tab::EditorTabChild,
     id::{DiffEditorId, EditorTabId},
     inline_completion::{InlineCompletionItem, InlineCompletionStatus},
-    keypress::{KeyPressFocus, condition::Condition},
+    keypress::{condition::Condition, KeyPressFocus},
     lsp::path_from_url,
     main_split::{Editors, MainSplitData, SplitDirection, SplitMoveDirection},
     markdown::{
-        MarkdownContent, from_marked_string, from_plaintext, parse_markdown,
+        from_marked_string, from_plaintext, parse_markdown, MarkdownContent,
     },
     panel::{
         call_hierarchy_view::CallHierarchyItemData,
@@ -396,7 +396,7 @@ impl EditorData {
 
     pub fn doc(&self) -> Rc<Doc> {
         let doc = self.editor.doc();
-        let Ok(doc) = doc.downcast_rc() else {
+        let Some(doc) = Rc::downcast::<Doc>(doc).ok() else {
             panic!("doc is not Rc<Doc>");
         };
 
@@ -2722,7 +2722,10 @@ impl EditorData {
                         }
                         FindHintRs::MatchWithoutLocation => {}
                         FindHintRs::Match(location) => {
-                            let Ok(path) = location.uri.to_file_path() else {
+                            let Ok(url) = url::Url::parse(location.uri.as_str()) else {
+                                return;
+                            };
+                            let Ok(path) = url.to_file_path() else {
                                 return;
                             };
                             self.common.internal_command.send(
@@ -3433,18 +3436,18 @@ pub struct DocSignal {
 impl DocSignal {
     pub fn get(&self) -> Rc<Doc> {
         let doc = self.inner.get();
-        doc.downcast_rc().ok().expect("doc is not Rc<Doc>")
+        Rc::downcast::<Doc>(doc).ok().expect("doc is not Rc<Doc>")
     }
 
     pub fn get_untracked(&self) -> Rc<Doc> {
         let doc = self.inner.get_untracked();
-        doc.downcast_rc().ok().expect("doc is not Rc<Doc>")
+        Rc::downcast::<Doc>(doc).ok().expect("doc is not Rc<Doc>")
     }
 
     pub fn with<O>(&self, f: impl FnOnce(&Rc<Doc>) -> O) -> O {
         self.inner.with(|doc| {
             let doc = doc.clone();
-            let doc: Rc<Doc> = doc.downcast_rc().ok().expect("doc is not Rc<Doc>");
+            let doc: Rc<Doc> = Rc::downcast::<Doc>(doc).ok().expect("doc is not Rc<Doc>");
             f(&doc)
         })
     }
@@ -3452,7 +3455,7 @@ impl DocSignal {
     pub fn with_untracked<O>(&self, f: impl FnOnce(&Rc<Doc>) -> O) -> O {
         self.inner.with_untracked(|doc| {
             let doc = doc.clone();
-            let doc: Rc<Doc> = doc.downcast_rc().ok().expect("doc is not Rc<Doc>");
+            let doc: Rc<Doc> = Rc::downcast::<Doc>(doc).ok().expect("doc is not Rc<Doc>");
             f(&doc)
         })
     }

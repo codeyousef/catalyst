@@ -6,19 +6,16 @@ use catalyst_core::{
     selection::Selection,
 };
 use floem::{
-    Renderer, View, ViewId,
-    action::{set_ime_allowed, set_ime_cursor_area},
-    context::EventCx,
-    event::{Event, EventListener, EventPropagation},
+    action::{set_ime_allowed, set_ime_cursor_area}, context::EventCx, event::{Event, EventListener, EventPropagation},
     kurbo::Stroke,
     peniko::{
-        Color,
         kurbo::{Line, Point, Rect, Size, Vec2},
+        Color,
     },
     prop_extractor,
     reactive::{
-        Memo, ReadSignal, RwSignal, Scope, SignalGet, SignalUpdate, SignalWith,
-        create_effect, create_memo, create_rw_signal,
+        create_effect, create_memo, create_rw_signal, Memo, ReadSignal, RwSignal, Scope,
+        SignalGet, SignalUpdate, SignalWith,
     },
     style::{
         CursorStyle, FontFamily, FontSize, FontStyle, FontWeight, LineHeight,
@@ -28,13 +25,16 @@ use floem::{
     text::{Attrs, AttrsList, FamilyOwned, TextLayout},
     unit::PxPct,
     views::Decorators,
+    Renderer,
+    View,
+    ViewId,
 };
 use lapce_xi_rope::Rope;
 
 use crate::{
-    config::{LapceConfig, color::LapceColor},
+    config::{color::LapceColor, LapceConfig},
     doc::Doc,
-    editor::{DocSignal, EditorData, view::editor_style},
+    editor::{view::editor_style, DocSignal, EditorData},
     keypress::KeyPressFocus,
     main_split::Editors,
     window_tab::CommonData,
@@ -394,6 +394,7 @@ impl TextInput {
                 self.content.as_str()
             },
             AttrsList::new(attrs.clone()),
+            None,
         );
         self.text_layout.set(Some(text_layout));
 
@@ -404,7 +405,7 @@ impl TextInput {
                 .unwrap_or(Color::BLACK)
                 .multiply_alpha(0.5),
         );
-        placeholder_text_layout.set_text(&self.placeholder, AttrsList::new(attrs));
+        placeholder_text_layout.set_text(&self.placeholder, AttrsList::new(attrs), None);
         self.placeholder_text_layout = Some(placeholder_text_layout);
     }
 

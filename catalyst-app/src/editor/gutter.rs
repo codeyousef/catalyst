@@ -1,16 +1,16 @@
 use catalyst_core::{buffer::rope_text::RopeText, mode::Mode};
 use floem::{
-    Renderer, View, ViewId,
-    context::PaintCx,
-    peniko::kurbo::{Point, Rect, Size},
-    reactive::{Memo, SignalGet, SignalWith},
+    context::PaintCx, peniko::kurbo::{Point, Rect, Size}, reactive::{Memo, SignalGet, SignalWith},
     text::{Attrs, AttrsList, FamilyOwned, TextLayout},
+    Renderer,
+    View,
+    ViewId,
 };
 use im::HashMap;
 use serde::{Deserialize, Serialize};
 
-use super::{EditorData, view::changes_colors_screen};
-use crate::config::{LapceConfig, color::LapceColor};
+use super::{view::changes_colors_screen, EditorData};
+use crate::config::{color::LapceColor, LapceConfig};
 
 pub struct EditorGutterView {
     id: ViewId,
@@ -178,9 +178,9 @@ impl View for EditorGutterView {
 
                 let mut text_layout = TextLayout::new();
                 if line == current_line {
-                    text_layout.set_text(&text, current_line_attrs_list.clone());
+                    text_layout.set_text(&text, current_line_attrs_list.clone(), None);
                 } else {
-                    text_layout.set_text(&text, attrs_list.clone());
+                    text_layout.set_text(&text, attrs_list.clone(), None);
                 }
                 let size = text_layout.size();
                 let height = size.height;

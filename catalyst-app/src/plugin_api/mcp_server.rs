@@ -8,43 +8,47 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Trait that MCP server plugins must implement
-pub trait McpServerPlugin: Send + Sync {
+pub trait McpServerPlugin: Send + Sync + 'static {
     /// Initialize the MCP server plugin
     fn initialize(&mut self) -> Result<()>;
-    
+
     /// Get server information
     fn server_info(&self) -> McpServerInfo;
-    
+
     /// Start the MCP server
     fn start(&mut self) -> Result<()>;
-    
+
     /// Stop the MCP server
     fn stop(&mut self) -> Result<()>;
-    
+
     /// Check if server is running
     fn is_running(&self) -> bool;
-    
+
     /// Get server health status
     fn health_check(&self) -> McpServerHealth;
-    
+
     /// Send a request to the MCP server
     fn send_request(&self, request: McpRequest) -> Result<McpResponse>;
-    
+
     /// Get available tools from the server
     fn get_tools(&self) -> Result<Vec<McpTool>>;
-    
+
     /// Get available resources from the server
     fn get_resources(&self) -> Result<Vec<McpResource>>;
-    
+
     /// Call a tool on the server
-    fn call_tool(&self, tool_name: &str, arguments: serde_json::Value) -> Result<McpToolResult>;
-    
+    fn call_tool(
+        &self,
+        tool_name: &str,
+        arguments: serde_json::Value,
+    ) -> Result<McpToolResult>;
+
     /// Read a resource from the server
     fn read_resource(&self, resource_uri: &str) -> Result<McpResourceContent>;
-    
+
     /// Subscribe to resource changes
     fn subscribe_to_resource(&self, resource_uri: &str) -> Result<()>;
-    
+
     /// Unsubscribe from resource changes
     fn unsubscribe_from_resource(&self, resource_uri: &str) -> Result<()>;
 }
@@ -172,46 +176,55 @@ impl McpServerRegistry {
             servers: HashMap::new(),
         }
     }
-    
+
     /// Register a new MCP server
-    pub fn register_server(&mut self, id: String, server: Box<dyn McpServerPlugin>) -> Result<()> {
+    pub fn register_server(
+        &mut self,
+        id: String,
+        server: Box<dyn McpServerPlugin>,
+    ) -> Result<()> {
         if self.servers.contains_key(&id) {
-            return Err(anyhow::anyhow!("MCP server with id '{}' is already registered", id));
+            return Err(anyhow::anyhow!(
+                "MCP server with id '{}' is already registered",
+                id
+            ));
         }
-        
+
         self.servers.insert(id, server);
         Ok(())
     }
-    
+
     /// Unregister an MCP server
     pub fn unregister_server(&mut self, id: &str) -> Result<()> {
-        self.servers.remove(id)
-            .ok_or_else(|| anyhow::anyhow!("MCP server with id '{}' is not registered", id))?;
+        self.servers.remove(id).ok_or_else(|| {
+            anyhow::anyhow!("MCP server with id '{}' is not registered", id)
+        })?;
         Ok(())
     }
-    
+
     /// Get an MCP server by id
     pub fn get_server(&self, id: &str) -> Option<&dyn McpServerPlugin> {
         self.servers.get(id).map(|server| server.as_ref())
     }
-    
+
     /// Get a mutable MCP server by id
     pub fn get_server_mut(&mut self, id: &str) -> Option<&mut dyn McpServerPlugin> {
         self.servers.get_mut(id).map(|server| server.as_mut())
     }
-    
+
     /// Get all registered server IDs
     pub fn get_server_ids(&self) -> Vec<String> {
         self.servers.keys().cloned().collect()
     }
-    
+
     /// Get server info for all registered servers
     pub fn get_all_server_info(&self) -> Vec<McpServerInfo> {
-        self.servers.values()
+        self.servers
+            .values()
             .map(|server| server.server_info())
             .collect()
     }
-    
+
     /// Start all auto-start servers
     pub fn start_auto_start_servers(&mut self) -> Result<()> {
         for server in self.servers.values_mut() {
@@ -221,7 +234,7 @@ impl McpServerRegistry {
         }
         Ok(())
     }
-    
+
     /// Stop all running servers
     pub fn stop_all_servers(&mut self) -> Result<()> {
         for server in self.servers.values_mut() {
@@ -231,10 +244,11 @@ impl McpServerRegistry {
         }
         Ok(())
     }
-    
+
     /// Get health status for all servers
     pub fn get_all_health_status(&self) -> HashMap<String, McpServerHealth> {
-        self.servers.iter()
+        self.servers
+            .iter()
             .map(|(id, server)| (id.clone(), server.health_check()))
             .collect()
     }
