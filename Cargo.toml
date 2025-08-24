@@ -10,6 +10,115 @@ license      = "Apache-2.0"
 homepage     = "https://catalyst-ide.dev"
 authors      = ["Dongdong Zhou <dzhou121@gmail.com>"]
 
+[workspace.dependencies]
+anyhow = { version = "1.0" }
+backtrace = { version = "0.3" }
+chrono = { version = "0.4" }
+clap = { version = "4.5.0", default-features = false, features = ["std", "help", "usage", "derive"] }
+crossbeam-channel = { version = "0.5.12" }
+directories = { version = "4.0.1" }
+flate2 = { version = "1.0" }
+
+# Git operations - replaced git2 with pure Rust gix for faster compilation
+gix = { version = "0.66", features = ["blocking-io", "worktree-mutation"] }
+git2 = { version = "0.20.0", features = ["vendored-openssl"] }
+
+globset = { version = "0.4.14" }
+hashbrown = { version = "0.14.5", features = ["serde"] }
+im = { version = "15.0.0", features = ["serde"] }
+include_dir = { version = "0.7" }
+indexmap = { version = "2.0", features = ["serde"] }
+interprocess = { version = "1.2.1" }
+itertools = { version = "0.12.1" }
+
+# File watching - optimized with debouncing
+notify-debouncer-full = { version = "0.3" }
+notify = { version = "5.2.0", features = ["serde"] }
+
+once_cell = { version = "1.19" }
+parking_lot = { version = "0.12.3" }
+rayon = { version = "1.10.0" }
+
+# Regex optimizations
+regex = { version = "1.10.5" }
+regex-lite = { version = "0.1" }
+
+remain = { version = "0.2" }
+semver = { version = "1.0" }
+
+# HTTP client optimization - lighter than reqwest
+ureq = { version = "2.10", features = ["json"] }
+reqwest = { version = "0.11", features = ["blocking", "json", "socks"] }
+
+serde = { version = "1.0" }
+serde_json = { version = "1.0" }
+smallvec = { version = "1.15.1" }
+strum = { version = "0.27.1" }
+strum_macros = { version = "0.27.1" }
+tar = { version = "0.4" }
+tempfile = { version = "3.10.1" }
+thiserror = { version = "1.0" }
+toml = { version = "*" }
+toml_edit = { version = "0.20.2", features = ["serde"] }
+url = { version = "2.5.0" }
+zstd = { version = "0.11.2" }
+
+# Performance optimization dependencies
+dashmap = { version = "6.0" }
+string-interner = { version = "0.17" }
+object-pool = { version = "0.5" }
+smartstring = { version = "1.0" }
+bumpalo = { version = "3.14" }
+
+# Fast directory operations
+jwalk = { version = "0.8" }
+ignore = { version = "0.4" }
+
+# Testing dependencies
+criterion = { version = "0.5", features = ["html_reports"] }
+rstest = { version = "0.21" }
+walkdir = { version = "2.5" }
+
+lsp-types = { version = "0.97.0", features = ["proposed"] }
+psp-types = { path = "../psp-types-patched" }
+
+lapce-xi-rope = { version = "0.3.2", features = ["serde"] }
+
+catalyst-core = { path = "catalyst-core" }
+catalyst-rpc = { path = "catalyst-rpc" }
+catalyst-proxy = { path = "catalyst-proxy" }
+
+floem = { git = "https://github.com/lapce/floem", rev = "04225165764097b94f6f2c7caf87cacb018252be", features = ["editor", "serde", "default-image-formats", "rfd-async-std"] }
+floem-editor-core = { git = "https://github.com/lapce/floem", rev = "04225165764097b94f6f2c7caf87cacb018252be", features = ["serde"] }
+
+[workspace.dependencies.tracing]
+git = "https://github.com/tokio-rs/tracing"
+rev = "908cc432a5994f6e17c8f36e13c217dc40085704"
+package = "tracing"
+
+[workspace.dependencies.tracing-log]
+git = "https://github.com/tokio-rs/tracing"
+rev = "908cc432a5994f6e17c8f36e13c217dc40085704"
+package = "tracing-log"
+
+[workspace.dependencies.tracing-subscriber]
+git = "https://github.com/tokio-rs/tracing"
+rev = "908cc432a5994f6e17c8f36e13c217dc40085704"
+package = "tracing-subscriber"
+
+[workspace.dependencies.tracing-appender]
+git = "https://github.com/tokio-rs/tracing"
+rev = "908cc432a5994f6e17c8f36e13c217dc40085704"
+package = "tracing-appender"
+
+[workspace.dependencies.alacritty_terminal]
+git = "https://github.com/alacritty/alacritty"
+rev = "cacdb5bb3b72bad2c729227537979d95af75978f"
+
+[workspace.dependencies.windows-sys]
+version = "0"
+features = ["Win32_Foundation"]
+
 [patch.crates-io]
 # Temporarily patch lsp-types with a version that adds message-type debug
 # lsp-types = { git = "https://github.com/lapce/lsp-types", rev = "feaa1e2ec80975c9dadd400a238ceacf071058e6" }
