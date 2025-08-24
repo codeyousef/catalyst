@@ -813,7 +813,10 @@ impl ProxyHandler for Dispatcher {
                     .buffers
                     .iter()
                     .map(|(path, buffer)| TextDocumentItem {
-                        uri: Uri::from_str(&Url::from_file_path(path).unwrap().to_string()).unwrap(),
+                        uri: Uri::from_str(
+                            &Url::from_file_path(path).unwrap().to_string(),
+                        )
+                            .unwrap(),
                         language_id: buffer.language_id.to_string(),
                         version: buffer.rev as i32,
                         text: buffer.get_document(),

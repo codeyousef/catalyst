@@ -475,7 +475,11 @@ impl TerminalView {
 
         for (char, attr, x, y) in &line_content.chars {
             let mut text_layout = TextLayout::new();
-            text_layout.set_text(&char.to_string(), AttrsList::new(attr.clone()), None);
+            text_layout.set_text(
+                &char.to_string(),
+                AttrsList::new(attr.clone()),
+                None,
+            );
             cx.draw_text(&text_layout, Point::new(*x, *y));
         }
     }

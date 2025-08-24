@@ -285,12 +285,18 @@ impl PluginCatalog {
     }
 
     pub fn handle_did_open_text_document(&mut self, document: TextDocumentItem) {
-        match Url::parse(document.uri.as_str()).ok().and_then(|url| url.to_file_path().ok()) {
+        match Url::parse(document.uri.as_str())
+            .ok()
+            .and_then(|url| url.to_file_path().ok())
+        {
             Some(path) => {
                 self.open_files.insert(path, document.language_id.clone());
             }
             None => {
-                tracing::error!("failed to convert URI to file path: {:?}", document.uri);
+                tracing::error!(
+                    "failed to convert URI to file path: {:?}",
+                    document.uri
+                );
             }
         }
 
@@ -308,7 +314,9 @@ impl PluginCatalog {
             .collect();
         self.start_unactivated_volts(to_be_activated);
 
-        let path = Url::parse(document.uri.as_str()).ok().and_then(|url| url.to_file_path().ok());
+        let path = Url::parse(document.uri.as_str())
+            .ok()
+            .and_then(|url| url.to_file_path().ok());
         for (_, plugin) in self.plugins.iter() {
             plugin.server_notification(
                 DidOpenTextDocument::METHOD,
@@ -496,7 +504,9 @@ impl PluginCatalog {
                     Ok(ProxyResponse::GetOpenFilesContentResponse { items }) => {
                         for item in items {
                             let language_id = Some(item.language_id.clone());
-                            let path = Url::parse(item.uri.as_str()).ok().and_then(|url| url.to_file_path().ok());
+                            let path = Url::parse(item.uri.as_str())
+                                .ok()
+                                .and_then(|url| url.to_file_path().ok());
                             plugin.server_notification(
                                 DidOpenTextDocument::METHOD,
                                 DidOpenTextDocumentParams {

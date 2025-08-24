@@ -1279,7 +1279,9 @@ impl PluginHostHandler {
             _ => return,
         };
 
-        let path = Url::parse(document.uri.as_str()).ok().and_then(|url| url.to_file_path().ok());
+        let path = Url::parse(document.uri.as_str())
+            .ok()
+            .and_then(|url| url.to_file_path().ok());
 
         let params = DidChangeTextDocumentParams {
             text_document: document,

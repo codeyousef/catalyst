@@ -196,7 +196,9 @@ impl Plugin {
     fn initialize(&mut self) {
         let workspace = self.host.workspace.clone();
         let configurations = self.configurations.as_ref().map(unflatten_map);
-        let root_uri = workspace.map(|p| Uri::from_str(&Url::from_directory_path(p).unwrap().to_string()).unwrap());
+        let root_uri = workspace.map(|p| {
+            Uri::from_str(&Url::from_directory_path(p).unwrap().to_string()).unwrap()
+        });
         let server_rpc = self.host.server_rpc.clone();
         self.host.server_rpc.server_request_async(
             Initialize::METHOD,
@@ -473,9 +475,12 @@ pub fn start_volt(
         .env("VOLT_LIBC", volt_libc)?
         .env(
             "VOLT_URI",
-            Uri::from_str(&Url::from_directory_path(volt_path)
-                .map_err(|_| anyhow!("can't convert folder path to uri"))?
-                .to_string()).unwrap()
+            Uri::from_str(
+                &Url::from_directory_path(volt_path)
+                    .map_err(|_| anyhow!("can't convert folder path to uri"))?
+                    .to_string(),
+            )
+                .unwrap()
                 .as_str(),
         )?
         .stdin(Box::new(wasi_common::pipe::ReadPipe::from_shared(

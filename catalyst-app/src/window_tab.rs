@@ -2933,7 +2933,10 @@ impl WindowTabData {
             return;
         };
         let root_item = item;
-        let path: PathBuf = url::Url::parse(item.get_untracked().item.uri.as_str()).unwrap().to_file_path().unwrap();
+        let path: PathBuf = url::Url::parse(item.get_untracked().item.uri.as_str())
+            .unwrap()
+            .to_file_path()
+            .unwrap();
         let scope = self.scope;
         let send =
             create_ext_action(scope, move |_rs: Result<ProxyResponse, RpcError>| {

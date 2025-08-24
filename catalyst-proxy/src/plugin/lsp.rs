@@ -186,7 +186,8 @@ impl LspClient {
         args: Vec<String>,
         options: Option<Value>,
     ) -> Result<Self> {
-        let url = Url::parse(server_uri.as_str()).map_err(|_| anyhow!("invalid URI"))?;
+        let url =
+            Url::parse(server_uri.as_str()).map_err(|_| anyhow!("invalid URI"))?;
         let server = match url.scheme() {
             "file" => {
                 let path = url.to_file_path().map_err(|_| anyhow!(""))?;
@@ -362,10 +363,9 @@ impl LspClient {
     }
 
     fn initialize(&mut self) {
-        let root_uri = self
-            .workspace
-            .clone()
-            .map(|p| Uri::from_str(&Url::from_directory_path(p).unwrap().to_string()).unwrap());
+        let root_uri = self.workspace.clone().map(|p| {
+            Uri::from_str(&Url::from_directory_path(p).unwrap().to_string()).unwrap()
+        });
         tracing::debug!("initialization_options {:?}", self.options);
         #[allow(deprecated)]
         let params = InitializeParams {

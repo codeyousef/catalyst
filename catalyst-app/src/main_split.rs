@@ -2236,27 +2236,27 @@ impl MainSplitData {
             for (url, edits) in edits {
                 if let Ok(url_parsed) = url::Url::parse(url.as_str()) {
                     if let Ok(path) = url_parsed.to_file_path() {
-                    let active_path = self
-                        .active_editor
-                        .get_untracked()
-                        .map(|editor| editor.doc())
-                        .map(|doc| doc.content.get_untracked())
-                        .and_then(|content| content.path().cloned());
-                    let position = if active_path.as_ref() == Some(&path) {
-                        None
-                    } else {
-                        edits
-                            .first()
-                            .map(|edit| EditorPosition::Position(edit.range.start))
-                    };
-                    let location = EditorLocation {
-                        path,
-                        position,
-                        scroll_offset: None,
-                        ignore_unconfirmed: true,
-                        same_editor_tab: false,
-                    };
-                    self.jump_to_location(location, Some(edits));
+                        let active_path = self
+                            .active_editor
+                            .get_untracked()
+                            .map(|editor| editor.doc())
+                            .map(|doc| doc.content.get_untracked())
+                            .and_then(|content| content.path().cloned());
+                        let position = if active_path.as_ref() == Some(&path) {
+                            None
+                        } else {
+                            edits.first().map(|edit| {
+                                EditorPosition::Position(edit.range.start)
+                            })
+                        };
+                        let location = EditorLocation {
+                            path,
+                            position,
+                            scroll_offset: None,
+                            ignore_unconfirmed: true,
+                            same_editor_tab: false,
+                        };
+                        self.jump_to_location(location, Some(edits));
                     }
                 }
             }

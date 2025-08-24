@@ -2722,7 +2722,8 @@ impl EditorData {
                         }
                         FindHintRs::MatchWithoutLocation => {}
                         FindHintRs::Match(location) => {
-                            let Ok(url) = url::Url::parse(location.uri.as_str()) else {
+                            let Ok(url) = url::Url::parse(location.uri.as_str())
+                            else {
                                 return;
                             };
                             let Ok(path) = url.to_file_path() else {
@@ -3447,7 +3448,8 @@ impl DocSignal {
     pub fn with<O>(&self, f: impl FnOnce(&Rc<Doc>) -> O) -> O {
         self.inner.with(|doc| {
             let doc = doc.clone();
-            let doc: Rc<Doc> = Rc::downcast::<Doc>(doc).ok().expect("doc is not Rc<Doc>");
+            let doc: Rc<Doc> =
+                Rc::downcast::<Doc>(doc).ok().expect("doc is not Rc<Doc>");
             f(&doc)
         })
     }
@@ -3455,7 +3457,8 @@ impl DocSignal {
     pub fn with_untracked<O>(&self, f: impl FnOnce(&Rc<Doc>) -> O) -> O {
         self.inner.with_untracked(|doc| {
             let doc = doc.clone();
-            let doc: Rc<Doc> = Rc::downcast::<Doc>(doc).ok().expect("doc is not Rc<Doc>");
+            let doc: Rc<Doc> =
+                Rc::downcast::<Doc>(doc).ok().expect("doc is not Rc<Doc>");
             f(&doc)
         })
     }
