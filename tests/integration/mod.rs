@@ -1,11 +1,12 @@
+use parking_lot::Mutex;
 /// Integration Test Framework for Catalyst IDE
-/// 
+///
 /// Provides end-to-end testing capabilities for the complete Catalyst IDE system,
 /// including UI, backend, MCP servers, and Claude AI integration.
 
-use std::process::{Command, Child};
+use std::process::{Child, Command};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
-use std::sync::{Arc, Mutex};
 
 pub mod ui_tests;
 pub mod claude_integration_tests;
@@ -50,7 +51,7 @@ impl IntegrationTestRunner {
     
     /// Start Catalyst IDE process for integration testing
     pub fn start_catalyst(&self) -> Result<(), String> {
-        let mut process_guard = self.catalyst_process.lock().unwrap();
+        let mut process_guard = self.catalyst_process.lock();
         
         if process_guard.is_some() {
             return Ok(()); // Already running
@@ -73,7 +74,7 @@ impl IntegrationTestRunner {
     
     /// Stop Catalyst IDE process
     pub fn stop_catalyst(&self) -> Result<(), String> {
-        let mut process_guard = self.catalyst_process.lock().unwrap();
+        let mut process_guard = self.catalyst_process.lock();
         
         if let Some(mut child) = process_guard.take() {
             child.kill().map_err(|e| format!("Failed to kill Catalyst: {}", e))?;
@@ -85,7 +86,7 @@ impl IntegrationTestRunner {
     
     /// Check if Catalyst is running
     pub fn is_catalyst_running(&self) -> bool {
-        let process_guard = self.catalyst_process.lock().unwrap();
+        let process_guard = self.catalyst_process.lock();
         
         if let Some(ref child) = *process_guard {
             // Try to poll without blocking
@@ -257,7 +258,7 @@ impl IntegrationTestResults {
 #[cfg(test)]
 mod integration_tests {
     use super::*;
-    
+
     #[test]
     fn test_integration_test_runner_creation() {
         let config = IntegrationTestConfig::default();
